@@ -88,7 +88,7 @@ If your hotspot cannot reliably receive challenges from its neighbors it is losi
 
 To run the `poc_reliability` report run:
 
-    python3 analyze_hotspot.py -x poc_reliability -address {hotspot address}
+    python3 analyze_hotspot.py -x poc_reliability -a {hotspot address}
     
     
 An example output table is:

@@ -237,6 +237,8 @@ def main():
         poc_reliability(hotspot, challenges)
     elif args.x == 'poc_v10':
         pocv10_violations(hotspot, challenges)
+    else:
+        print("please specify a report with '-x'. Use '-h' to see report options")
 
 
 if __name__ == '__main__':

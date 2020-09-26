@@ -27,7 +27,7 @@ If there is a hotspot naming conflict only the last hotspot with that name retur
 
 see
 
-    python3 analyze_hotpsots.py -h
+    python3 analyze_hotspots.py -h
     
 for more details on arguments.
 

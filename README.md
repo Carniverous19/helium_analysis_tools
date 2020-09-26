@@ -40,7 +40,7 @@ to run the `poc_v10` report run:
 
     python3 analyze_hotspot.py -x poc_v10 -a {hotspot address}
 
-There are two tables in this report.  THe first output table gives a summary overview with an example shown below:
+There are two tables in this report.  The first output table gives a summary overview with an example shown below:
 
     analyzed 202 challenges from 516276-513758
     PoC v10 failures for name-name-name

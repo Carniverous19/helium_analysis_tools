@@ -214,7 +214,7 @@ def main():
     parser.add_argument('-x', help='report to run', choices=['poc_reliability', 'poc_v10'])
 
     parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=500, type=int)
-    parser.add_argument('-n', '--name', help='hoptsot name to analyze with dashes-between-words')
+    parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')
     parser.add_argument('-a', '--address', help='hotspot address to analyze')
 
     args = parser.parse_args()

@@ -71,8 +71,6 @@ def pocv10_violations(hotspot, chals):
                     if p['receipt']['signal'] < snr_rssi_lim:
                         poc_rcv['bad_snr'] += 1
                         bad_neighbors[transmitter]['snr'] += 1
-                        print(f"failed snr with lim {snr_rssi_lim}")
-                        print(p['receipt'])
             else:
                 for w in p['witnesses']:
                     if w['gateway'] != haddr:
@@ -96,7 +94,12 @@ def pocv10_violations(hotspot, chals):
                         receives_w['bad_snr'] += 1
                         bad_neighbors[p['challengee']]['snr'] += 1
             transmitter = p['challengee']
-    print(f"analyzed {len(chals)} challenges from {chals[0]['height']}-{chals[-1]['height']}")
+
+    days, remainder = divmod(chals[0]['time'] - chals[-1]['time'], 3600 * 24)
+    hours = int(round(remainder / 3600, 0))
+    print(
+        f"analyzing {len(chals)} challenges from block {chals[0]['height']}-{chals[-1]['height']} over {days} days, {hours} hrs")
+
     print(f"PoC v10 failures for {hotspot['name']}")
 
     print(F"SUMMARY")
@@ -109,8 +112,8 @@ def pocv10_violations(hotspot, chals):
     print()
     print()
     print(f'BY "BAD" NEIGHBOR')
-    print(f"Neighboring Hotspot           | dist km | heading | bad RSSI (%)  | bad SNR (%)   |")
-    print(f"------------------------------+---------+---------+---------------+---------------|")
+    print(f"Neighboring Hotspot           | dist km | heading |  bad RSSI (%)  |  bad SNR (%)   |")
+    print(f"------------------------------+---------+---------+----------------+----------------|")
     hlat, hlng = hotspot['lat'], hotspot['lng']
     for n in bad_neighbors:
         if bad_neighbors[n]['rssi'] or bad_neighbors[n]['snr']:
@@ -123,7 +126,7 @@ def pocv10_violations(hotspot, chals):
                 return_heading=True
             )
 
-            print(f"{H.get_hotspot_by_addr(n)['name']:29} | {dist_km:5.1f}   | {__heading2str__(heading):7} | {bad_neighbors[n]['rssi']:2d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['rssi']*100/bad_neighbors[n]['ttl']:3.0f}%) | {bad_neighbors[n]['snr']:2d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['snr']*100/bad_neighbors[n]['ttl']:3.0f}%) |")
+            print(f"{H.get_hotspot_by_addr(n)['name']:29} | {dist_km:5.1f}   | {__heading2str__(heading):7} | {bad_neighbors[n]['rssi']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['rssi']*100/bad_neighbors[n]['ttl']:3.0f}%) | {bad_neighbors[n]['snr']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['snr']*100/bad_neighbors[n]['ttl']:3.0f}%) |")
 
 def poc_reliability(hotspot, challenges):
     """
@@ -211,7 +214,7 @@ def poc_reliability(hotspot, challenges):
 
 def main():
     parser = argparse.ArgumentParser("analyze hotspots", add_help=True)
-    parser.add_argument('-x', help='report to run', choices=['poc_reliability', 'poc_v10'])
+    parser.add_argument('-x', help='report to run', choices=['poc_reliability', 'poc_v10'], required=True)
 
     parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=500, type=int)
     parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')

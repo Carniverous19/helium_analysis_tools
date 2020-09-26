@@ -38,7 +38,7 @@ For information on PoC v10 requirements see the blog post [Blockchain PoC v10](h
 
 to run the `poc_v10` report run:
 
-    python3 analyze_hotspot.py -x poc_v10 -address {hotspot address}
+    python3 analyze_hotspot.py -x poc_v10 --address {hotspot address}
 
 There are two tables in this report.  THe first output table gives a summary overview with an example shown below:
 
@@ -88,7 +88,7 @@ If your hotspot cannot reliably receive challenges from its neighbors it is losi
 
 To run the `poc_reliability` report run:
 
-    python3 analyze_hotspot.py -x poc_reliability -address {hotspot address}
+    python3 analyze_hotspot.py -x poc_reliability --address {hotspot address}
     
     
 An example output table is:

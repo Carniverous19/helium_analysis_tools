@@ -20,14 +20,14 @@ To refresh the cache run
 
 A list of tools and brief description is provided below
 
-## analyze_hotspots.py
+## analyze_hotspot.py
 This file provides useful reports on an individual hotspot's PoC activity.  Note this code allows you to specify either hotspot name (with dashes) or hotspot address.
 It is suggested to always use the hotspot address as there is no guarantee that a hotspot has a unique name (there are already 3 conflicts among ~8,500 hotspots)
 If there is a hotspot naming conflict only the last hotspot with that name returned will be considered.
 
 see
 
-    python3 analyze_hotpsots.py -h
+    python3 analyze_hotspot.py -h
     
 for more details on arguments.
 
@@ -38,7 +38,7 @@ For information on PoC v10 requirements see the blog post [Blockchain PoC v10](h
 
 to run the `poc_v10` report run:
 
-    python3 analyze_hotspot.py -x poc_v10 -a {hotspot address}
+    python3 analyze_hotspot.py -x poc_v10 --address {hotspot address}
 
 There are two tables in this report.  The first output table gives a summary overview with an example shown below:
 
@@ -88,8 +88,7 @@ If your hotspot cannot reliably receive challenges from its neighbors it is losi
 
 To run the `poc_reliability` report run:
 
-    python3 analyze_hotspot.py -x poc_reliability -a {hotspot address}
-    
+    python3 analyze_hotspot.py -x poc_reliability --address {hotspot address}
     
 An example output table is:
 

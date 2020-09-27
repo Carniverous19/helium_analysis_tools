@@ -112,8 +112,8 @@ def pocv10_violations(hotspot, chals):
     print()
     print()
     print(f'BY "BAD" NEIGHBOR')
-    print(f"Neighboring Hotspot           | dist km | heading |  bad RSSI (%)  |  bad SNR (%)   |")
-    print(f"------------------------------+---------+---------+----------------+----------------|")
+    print(f"Neighboring Hotspot           | owner | dist km | heading |  bad RSSI (%)  |  bad SNR (%)   |")
+    print(f"------------------------------+-------+---------+---------+----------------+----------------|")
     hlat, hlng = hotspot['lat'], hotspot['lng']
     for n in bad_neighbors:
         if bad_neighbors[n]['rssi'] or bad_neighbors[n]['snr']:
@@ -125,8 +125,8 @@ def pocv10_violations(hotspot, chals):
                 bad_h['lng'],
                 return_heading=True
             )
-
-            print(f"{H.get_hotspot_by_addr(n)['name']:29} | {dist_km:5.1f}   | {__heading2str__(heading):7} | {bad_neighbors[n]['rssi']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['rssi']*100/bad_neighbors[n]['ttl']:3.0f}%) | {bad_neighbors[n]['snr']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['snr']*100/bad_neighbors[n]['ttl']:3.0f}%) |")
+            own = 'same' if hotspot['owner'] == bad_h['owner'] else bad_h['owner'][-5:]
+            print(f"{H.get_hotspot_by_addr(n)['name']:29} | {own:5} | {dist_km:5.1f}   | {__heading2str__(heading):7} | {bad_neighbors[n]['rssi']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['rssi']*100/bad_neighbors[n]['ttl']:3.0f}%) | {bad_neighbors[n]['snr']:3d}/{bad_neighbors[n]['ttl']:3d} ({bad_neighbors[n]['snr']*100/bad_neighbors[n]['ttl']:3.0f}%) |")
 
 def poc_reliability(hotspot, challenges):
     """
@@ -176,11 +176,11 @@ def poc_reliability(hotspot, challenges):
 
         if hotspot_transmitting:
             print(f"PoC hops from: {hotspot['name']}")
-            print(f"{'to receiving hotspot':30} | {'dist km'} | {'heading'} | recv/ttl | recv % |")
+            print(f"{'to receiving hotspot':30} | owner | {'dist km'} | {'heading'} | recv/ttl | recv % |")
         else:
             print(f"PoC hops to: {hotspot['name']}")
-            print(f"{'from transmitting hotspot':30} | {'dist km'} | {'heading'} | recv/ttl | recv % |")
-        print("-" * 72)
+            print(f"{'from transmitting hotspot':30} | owner | {'dist km'} | {'heading'} | recv/ttl | recv % |")
+        print("-" * 80)
 
         for h in results.keys():
             ttl = results[h][0] + results[h][1]
@@ -201,11 +201,11 @@ def poc_reliability(hotspot, challenges):
                 dist_min = min(dist_min, dist)
                 dist_max = max(dist_max, dist)
                 continue
-
-            print(f"{H.get_hotspot_by_addr(h)['name']:30} | {dist:6.1f}  | {heading:4.0f} {headingstr[idx]:>2} | {results[h][0]:3d}/{ttl:3d}  | {results[h][0] / ttl * 100:5.0f}% |")
+            ownr = 'same' if hotspot['owner'] == H.get_hotspot_by_addr(h)['owner'] else H.get_hotspot_by_addr(h)['owner'][-5:]
+            print(f"{H.get_hotspot_by_addr(h)['name']:30} | {ownr:5} | {dist:6.1f}  | {heading:4.0f} {headingstr[idx]:>2} | {results[h][0]:3d}/{ttl:3d}  | {results[h][0] / ttl * 100:5.0f}% |")
 
         if other_ttl:
-            print(f"other ({other_cnt:2}){' ' * 20} | {dist_min:4.1f}-{dist_max:2.0f} |   N/A   | {other_pass:3d}/{other_ttl:3d}  | {other_pass / other_ttl * 100:5.0f}% | ")
+            print(f"other ({other_cnt:2}){' ' * 20} |       | {dist_min:4.1f}-{dist_max:2.0f} |   N/A   | {other_pass:3d}/{other_ttl:3d}  | {other_pass / other_ttl * 100:5.0f}% | ")
 
     summary_table(results_tx, hotspot_transmitting=True)
     print()

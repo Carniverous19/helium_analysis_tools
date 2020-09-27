@@ -62,21 +62,19 @@ This doesnt differentiate between types of interaction (witness or PoC hop) but 
 An example table is shown below:
     
     BY "BAD" NEIGHBOR
-    Neighboring Hotspot           | dist km | heading | bad RSSI (%)  | bad SNR (%)   |
-    ------------------------------+---------+---------+---------------+---------------|
-    tricky-carbon-pheasant        |   4.5   |  10  N  |  0/ 10 (  0%) |  5/ 10 ( 50%) |
-    polite-silver-bat             |   0.6   |  30 NE  |  0/ 24 (  0%) |  1/ 24 (  4%) |
-    faint-pearl-mantis            |   0.5   |  60 NE  |  0/ 25 (  0%) |  1/ 25 (  4%) |
-    big-gunmetal-blackbird        |   4.5   |  10  N  |  0/  6 (  0%) |  5/  6 ( 83%) |
-    shallow-parchment-copperhead  |   4.5   |  10  N  |  0/ 12 (  0%) |  5/ 12 ( 42%) |
-    skinny-fiery-wallaby          |   3.4   | 350  N  |  0/ 11 (  0%) |  2/ 11 ( 18%) |
-    swift-purple-griffin          |   2.1   | 270  W  |  0/  6 (  0%) |  5/  6 ( 83%) |
-    clean-leather-stallion        |   1.3   | 310 NW  |  0/ 20 (  0%) |  3/ 20 ( 15%) |
-    innocent-maroon-swift         |   1.0   | 315 NW  |  0/ 11 (  0%) |  1/ 11 (  9%) |
-    uneven-banana-peacock         |   4.5   |  10  N  |  0/  3 (  0%) |  2/  3 ( 67%) |
-    large-mercurial-coyote        |   2.6   | 285  W  |  0/  7 (  0%) |  1/  7 ( 14%) |
+    Neighboring Hotspot           | owner | dist km | heading |  bad RSSI (%)  |  bad SNR (%)   |
+    ------------------------------+-------+---------+---------+----------------+----------------|
+    colossal-aquamarine-okapi     | same  |   4.0   | 280  W  |  30/ 30 (100%) |   0/ 30 (  0%) |
+    keen-navy-seagull             | same  |   4.3   | 285  W  |  25/ 48 ( 52%) |   0/ 48 (  0%) |
+    dizzy-magenta-haddock         | same  |   3.5   | 285  W  |  73/ 73 (100%) |   0/ 73 (  0%) |
+    faithful-tiger-crab           | to5cr |  19.2   | 145 SE  |   0/ 24 (  0%) |   4/ 24 ( 17%) |
+    quaint-mulberry-raccoon       | same  |   4.3   | 295 NW  |  40/ 40 (100%) |   0/ 40 (  0%) |
+    harsh-spruce-fox              | 49CDa |   3.8   | 285  W  |   7/ 60 ( 12%) |   0/ 60 (  0%) |
+    cuddly-scarlet-walrus         | 7xMGF |   7.7   | 130 SE  |   0/ 25 (  0%) |   1/ 25 (  4%) |
+    strong-tin-hare               | yjksQ | 186.6   | 140 SE  |   2/  2 (100%) |   0/  2 (  0%) |
 
- This table gives distance between hotspots, heading (degrees and compass) from reference hotspot and the breakdown of RSSI or SNR failures.
+The second column "owner" indicates whether the hotspot has the same owner as the reference hotspot or gives the last 5 digits of the base58 encoded owner field.
+The additional columns in the table are distance between hotspots, heading (degrees and compass) from reference hotspot and the breakdown of RSSI or SNR failures.
 
 
 ### poc_reliability
@@ -94,28 +92,35 @@ An example output table is:
 
     analyzing 500 challenges from block 516256-498146 over 11 days, 11 hrs
     PoC hops from: name-name-name
-    to receiving hotspot           | dist km | heading | recv/ttl | recv % |
-    ------------------------------------------------------------------------
-    tangy-aegean-grasshopper       |    0.4  |   15  N |  26/ 29  |    90% |
-    warm-hotpink-monkey            |    0.5  |  340  N |   5/  6  |    83% |
-    sweet-citron-stork             |    0.8  |   60 NE |   0/ 13  |     0% |
-    trendy-fleece-cobra            |    2.5  |  100  E |   3/  4  |    75% |
-    fluffy-aqua-stallion           |    1.6  |  315 NW |   6/ 11  |    55% |
-    bright-aquamarine-seal         |    2.0  |  110  E |   0/  9  |     0% |
-    scrawny-sable-cat              |    1.8  |  135 SE |   0/  5  |     0% |
-    other ( 9)                     |  5.3-31 |   N/A   |   0/  9  |     0% | 
-    
+    to receiving hotspot           | owner | dist km | heading | recv/ttl | recv % |
+    --------------------------------------------------------------------------------
+
+    boxy-green-copperhead          | wuMEh |    8.3  |  145 SE |   2/  4  |    50% |
+    acidic-lime-manatee            | dwZfH |    8.8  |  145 SE |   3/  6  |    50% |
+    joyous-grape-chicken           | wuMEh |    6.7  |  120 SE |   2/  2  |   100% |
+    merry-sage-baboon              | same  |    8.7  |  135 SE |   0/  4  |     0% |
+    cuddly-scarlet-walrus          | 7xMGF |    7.7  |  130 SE |   2/  4  |    50% |
+    flaky-magenta-pigeon           | GcK64 |   13.6  |  125 SE |   1/  6  |    17% |
+    bouncy-neon-cottonmouth        | same  |    3.2  |  290  W |   2/  2  |   100% |
+    other ( 7)                     |       |  2.3-33 |   N/A   |   5/  7  |    71% |
+
     
     PoC hops to: name-name-name
-    from transmitting hotspot      | dist km | heading | recv/ttl | recv % |
-    ------------------------------------------------------------------------
-    warm-hotpink-monkey            |    0.5  |  340  N |  16/ 26  |    62% |
-    trendy-fleece-cobra            |    2.5  |  100  E |   2/  6  |    33% |
-    fluffy-aqua-stallion           |    1.6  |  315 NW |   2/ 64  |     3% |
-    tangy-aegean-grasshopper       |    0.4  |   15  N |  22/ 23  |    96% |
-    other (10)                     |  2.2-33 |   N/A   |   1/ 10  |    10% | 
+    from transmitting hotspot      | owner | dist km | heading | recv/ttl | recv % |
+    --------------------------------------------------------------------------------
+    rapid-lemon-aardvark           | xHq7t |   22.3  |  150 SE |   2/  9  |    22% |
+    fast-aqua-jellyfish            | pNiHj |    7.2  |  130 SE |   0/  2  |     0% |
+    keen-navy-seagull              | same  |    4.3  |  285  W |  13/ 16  |    81% |
+    merry-sage-baboon              | same  |    8.7  |  135 SE |   0/  3  |     0% |
+    boxy-green-copperhead          | wuMEh |    8.3  |  145 SE |   3/  3  |   100% |
+    joyous-grape-chicken           | wuMEh |    6.7  |  120 SE |   2/  5  |    40% |
+    energetic-eggshell-hippo       | B2gu4 |    3.1  |  285  W |   2/  3  |    67% |
+    bright-brick-alligator         | 3oHpr |   10.7  |  145 SE |   0/  3  |     0% |
+    other ( 7)                     |       |  2.6-30 |   N/A   |   3/  7  |    43% |
+
     
  
 These tables count the total number of times the hotspot failed to receive an RF transmission (meaning previous hop passed) as well as the number of times the target hotspot transmitted and the following hop failed to receive.
 For hotspots with lots of interactions, any neighbor with a total of 1 interaction is pooled together into an "other" category.
-The columns in this table give the distance between the two hotspots in km, the heading from the reference hotspot to neighbor in degrees and compass heading as well as the total interaction counts and pass percentage.
+The second column "owner" indicates whether the hotspot has the same owner as the reference hotspot or gives the last 5 digits of the base58 encoded owner field.
+The remaining columns give the distance between the two hotspots in km, the heading from the reference hotspot to neighbor in degrees and compass heading as well as the total interaction counts and pass percentage.

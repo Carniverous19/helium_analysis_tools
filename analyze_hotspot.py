@@ -171,6 +171,8 @@ def poc_reliability(hotspot, challenges):
         other_pass = 0
         other_ttl = 0
         other_cnt = 0
+        all_ttl = 0
+        all_pass = 0
         dist_min = 9999
         dist_max = 0
 
@@ -184,7 +186,8 @@ def poc_reliability(hotspot, challenges):
 
         for h in results.keys():
             ttl = results[h][0] + results[h][1]
-
+            all_ttl += ttl
+            all_pass += results[h][0]
             dist, heading = utils.haversine_km(
                 hlat, hlon,
                 H.get_hotspot_by_addr(h)['lat'], H.get_hotspot_by_addr(h)['lng'],
@@ -205,7 +208,10 @@ def poc_reliability(hotspot, challenges):
             print(f"{H.get_hotspot_by_addr(h)['name']:30} | {ownr:5} | {dist:6.1f}  | {heading:4.0f} {headingstr[idx]:>2} | {results[h][0]:3d}/{ttl:3d}  | {results[h][0] / ttl * 100:5.0f}% |")
 
         if other_ttl:
-            print(f"other ({other_cnt:2}){' ' * 20} |       | {dist_min:4.1f}-{dist_max:2.0f} |   N/A   | {other_pass:3d}/{other_ttl:3d}  | {other_pass / other_ttl * 100:5.0f}% | ")
+            print(f"other ({other_cnt:2}){' ' * 20} |  N/A  | {dist_min:4.1f}-{dist_max:2.0f} |   N/A   | {other_pass:3d}/{other_ttl:3d}  | {other_pass / other_ttl * 100:5.0f}% | ")
+
+        print(f"{' ' * 40}{' ' * 10}         ---------------------")
+        print(f"{' ' * 40}{' '*10}   TOTAL | {all_pass:3d}/{all_ttl:4d} | {all_pass / all_ttl * 100:5.0f}% | ")
 
     summary_table(results_tx, hotspot_transmitting=True)
     print()

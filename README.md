@@ -103,6 +103,9 @@ An example output table is:
     flaky-magenta-pigeon           | GcK64 |   13.6  |  125 SE |   1/  6  |    17% |
     bouncy-neon-cottonmouth        | same  |    3.2  |  290  W |   2/  2  |   100% |
     other ( 7)                     |       |  2.3-33 |   N/A   |   5/  7  |    71% |
+                                                               ---------------------
+                                                         TOTAL |  17/  35 |    49% |
+
 
     
     PoC hops to: name-name-name
@@ -117,6 +120,8 @@ An example output table is:
     energetic-eggshell-hippo       | B2gu4 |    3.1  |  285  W |   2/  3  |    67% |
     bright-brick-alligator         | 3oHpr |   10.7  |  145 SE |   0/  3  |     0% |
     other ( 7)                     |       |  2.6-30 |   N/A   |   3/  7  |    43% |
+                                                               ---------------------
+                                                         TOTAL |  25/  51 |    49% |
 
     
  

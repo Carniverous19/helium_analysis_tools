@@ -33,6 +33,10 @@ def load_challenges(haddr, numchalls=500, cursor=None):
         if not cursor:
             break
 
+    if len(chals) > numchalls:
+        print(f"truncating challenges from {len(chals)} to {numchalls}")
+        chals = chals[:numchalls]
+
     return chals
 
 

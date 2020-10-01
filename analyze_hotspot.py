@@ -16,6 +16,64 @@ def __heading2str__(heading):
     return f"{heading:3.0f} {headingstr[idx]:>2}"
 
 
+def poc_summary(hotspot, chals, expected_chal_interval=120):
+
+    haddr = hotspot['address']
+    init_target = 0
+    challenger_count = 0
+    last_target = None
+    last_challenger = None
+    max_target_delta = 0
+    max_challenger_delta = 0
+    print(f"PoC Summary Report for: {hotspot['name']}")
+    planned_count = [0] * 5
+    tested_count = [0] * 5
+    passed_count = [0] * 5
+    for c in chals:
+        if c['path'][0]['challengee'] == haddr:
+            if last_target is None:
+                last_target = c['height']
+            else:
+                max_target_delta = max(max_target_delta, last_target - c['height'])
+                last_target = c['height']
+            init_target += 1
+        elif c['challenger'] == haddr:
+            if last_challenger is None:
+                last_challenger = c['height']
+            else:
+                max_challenger_delta = max(max_challenger_delta, last_challenger - c['height'])
+                last_challenger = c['height']
+            challenger_count += 1
+
+        next_passed = False
+        next_addr = ''
+        for i in range(len(c['path'])-1, -1, -1):
+
+            passed = c['path'][i]['witnesses'] or (c['path'][i]['receipt'] and i > 0) or next_passed
+            if c['path'][i]['challengee'] == hotspot['address']:
+                planned_count[i] += 1
+                if passed:
+                    passed_count[i] += 1
+
+            if passed and next_addr == hotspot['address']:
+                tested_count[i + 1] += 1
+
+            next_addr = c['path'][i]['challengee']
+            next_passed = passed
+        if c['path'][0]['challengee'] == hotspot['address']:
+            tested_count[0] += 1
+    print(f"targeted   {init_target} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/init_target:.0f} blocks)")
+    print(f"\tlongest untargeted stretch: {max_target_delta:4d} blocks")
+    print(f"challenger {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks ")#(every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.1f} blocks)")
+    print(f"\tlongest challenge creation stretch: {max_challenger_delta:4d} blocks")
+
+    print()
+    print(f"PoC Hop Summary")
+    print(f"Hop | planned | tested (%) | passed (%) |")
+    print(f'-----------------------------------------')
+    for i in range(0, 5):
+        print(f"{i:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) | {passed_count[i]:3d} ({passed_count[i]*100/planned_count[i]:3.0f}%) |")
+
 def pocv10_violations(hotspot, chals):
     """
 
@@ -95,10 +153,6 @@ def pocv10_violations(hotspot, chals):
                         bad_neighbors[p['challengee']]['snr'] += 1
             transmitter = p['challengee']
 
-    days, remainder = divmod(chals[0]['time'] - chals[-1]['time'], 3600 * 24)
-    hours = int(round(remainder / 3600, 0))
-    print(
-        f"analyzing {len(chals)} challenges from block {chals[0]['height']}-{chals[-1]['height']} over {days} days, {hours} hrs")
 
     print(f"PoC v10 failures for {hotspot['name']}")
 
@@ -138,10 +192,10 @@ def poc_reliability(hotspot, challenges):
     H = Hotspots()
     haddr = hotspot['address']
 
-    days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
-    hours = int(round(remainder / 3600, 0))
-    print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
-
+    # days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
+    # hours = int(round(remainder / 3600, 0))
+    # print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
+    #
 
     # iterate through challenges finding actual interactions with this hotspot
     results_tx = dict()  # key = tx addr, value = [pass, fail]
@@ -220,7 +274,7 @@ def poc_reliability(hotspot, challenges):
 
 def main():
     parser = argparse.ArgumentParser("analyze hotspots", add_help=True)
-    parser.add_argument('-x', help='report to run', choices=['poc_reliability', 'poc_v10'], required=True)
+    parser.add_argument('-x', help='report to run', choices=['poc_reliability', 'poc_v10', 'poc_summary'], required=True)
 
     parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=500, type=int)
     parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')
@@ -242,10 +296,18 @@ def main():
         raise ValueError("must provide hotspot address '--address' or name '--name'")
 
     challenges = utils.load_challenges(hotspot['address'], args.challenges)
+    challenges = challenges[:args.challenges]
+    days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
+    hours = int(round(remainder / 3600, 0))
+    print(
+        f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
+
     if args.x == 'poc_reliability':
         poc_reliability(hotspot, challenges)
     elif args.x == 'poc_v10':
         pocv10_violations(hotspot, challenges)
+    elif args.x == 'poc_summary':
+        poc_summary(hotspot, challenges)
 
 
 if __name__ == '__main__':

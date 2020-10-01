@@ -25,6 +25,7 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
     last_challenger = None
     max_target_delta = 0
     max_challenger_delta = 0
+    untargetable_count = 0
     print(f"PoC Summary Report for: {hotspot['name']}")
     planned_count = [0] * 5
     tested_count = [0] * 5
@@ -41,7 +42,10 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
             if last_challenger is None:
                 last_challenger = c['height']
             else:
-                max_challenger_delta = max(max_challenger_delta, last_challenger - c['height'])
+                challenger_delta = last_challenger - c['height']
+                if challenger_delta > 300:
+                    untargetable_count += challenger_delta - 300
+                max_challenger_delta = max(max_challenger_delta, challenger_delta)
                 last_challenger = c['height']
             challenger_count += 1
 
@@ -62,17 +66,21 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
             next_passed = passed
         if c['path'][0]['challengee'] == hotspot['address']:
             tested_count[0] += 1
-    print(f"targeted   {init_target} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/init_target:.0f} blocks)")
-    print(f"\tlongest untargeted stretch: {max_target_delta:4d} blocks")
-    print(f"challenger {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks ")#(every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.1f} blocks)")
-    print(f"\tlongest challenge creation stretch: {max_challenger_delta:4d} blocks")
 
     print()
-    print(f"PoC Hop Summary")
+    print('PoC Eligibility:')
+    print(f"successfully targeted   {init_target} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/init_target:.0f} blocks)")
+    print(f"\tlongest untargeted stretch: {max_target_delta:4d} blocks")
+    print(f"challenger receipt txn  {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.0f} blocks)")
+    print(f"\tlongest stretch without challenger receipt: {max_challenger_delta:4d} blocks")
+    print(f"\thotspot was untargetable for: {untargetable_count} blocks ({untargetable_count*100/(chals[0]['height']-chals[-1]['height']):.1f}% of blocks)")
+
+    print()
+    print(f"PoC Hop Summary:")
     print(f"Hop | planned | tested (%) | passed (%) |")
     print(f'-----------------------------------------')
     for i in range(0, 5):
-        print(f"{i:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) | {passed_count[i]:3d} ({passed_count[i]*100/planned_count[i]:3.0f}%) |")
+        print(f"{i+1:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) | {passed_count[i]:3d} ({passed_count[i]*100/planned_count[i]:3.0f}%) |")
 
 def pocv10_violations(hotspot, chals):
     """

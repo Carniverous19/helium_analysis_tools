@@ -31,9 +31,50 @@ see
     
 for more details on arguments.
 
+### poc_summary
+
+This report gives a summary of recent hotspot PoC activity.
+
+to run the `poc_summary` report run:
+
+    python3 analyze_hotspot.py -x poc_summary --address {hotspot address}
+
+First this report lists average blocks between PoC targeting. This should be around every 120 blocks (chain variable dependent), but emprical data shows realistic numbers of around 150-190 blocks are still healthy.
+It also shows how often your hotspot submits poc receipts from challenge it creates.  These are used to determine eligibility to be targeted.
+Your hotspot must submit a receipt every 300 blocks (chain variable dependent) to be eligible for PoC.
+
+    analyzing 500 challenges from block 525444-485167 over 25 days, 2 hrs
+    PoC Summary Report for: name-name-name
+    
+    PoC Eligibility:
+    successfully targeted   83 times in 40277 blocks (every 485 blocks)
+            longest untargeted stretch: 2407 blocks
+    challenger receipt txn  139 times in 40277 blocks (every 290 blocks)
+            longest stretch without challenger receipt: 1245 blocks
+            hotspot was untargetable for: 8241 blocks (20.5% of blocks)
+            
+In this example we can see some unhealthy behavior.  The hotspot is only successfully targeted (meaning a `poc_receipt_v1` transaction was submitted) every 485 blocks which is significantly less frequent than the chain variable and emprical data.
+Also there are large periods of time where this hotspot was ineligible to be targeted for PoC due to long stretches of blocks without poc receipts as challenger.
+
+Secondly, a table summarizing multihop PoC for the selected hotspot is presented:
+
+    PoC Hop Summary
+    Hop | planned | tested (%) | passed (%) |
+    -----------------------------------------
+      1 |     63  |  63 (100%) |  61 ( 97%) |
+      2 |    250  | 194 ( 78%) |  97 ( 39%) |
+      3 |    166  |  57 ( 34%) |  25 ( 15%) |
+      4 |    133  |  16 ( 12%) |   4 (  3%) |
+      5 |    116  |   4 (  3%) |   3 (  3%) |
+
+The planned column lists the number of times your hotspot was planned to be challenged per hop position if all previous hops completely successfully.
+The tested column lists the number of times your hotspot was actually reached meaning the previous hop was successfull. 
+The passed column lists the number of times your hotspot successfully completed the challenge.  Note the passed percentage is out of planned, not tested.
+
+
 ### poc_v10
 
-First is `poc_v10` which looks at recent challenge activity for the selected hotspot and reports the total number of witness and PoC hops that violate PoCv10 requirements.
+Next is `poc_v10` which looks at recent challenge activity for the selected hotspot and reports the total number of witness and PoC hops that violate PoCv10 requirements.
 For information on PoC v10 requirements see the blog post [Blockchain PoC v10](https://engineering.helium.com/2020/09/21/blockchain-poc-v10.html).
 
 to run the `poc_v10` report run:

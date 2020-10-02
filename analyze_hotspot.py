@@ -43,6 +43,7 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
                 last_challenger = c['height']
             else:
                 challenger_delta = last_challenger - c['height']
+                #TODO: reference actual chain variable not hardcoded numbers
                 if challenger_delta > 300:
                     untargetable_count += challenger_delta - 300
                 max_challenger_delta = max(max_challenger_delta, challenger_delta)
@@ -69,9 +70,15 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
 
     print()
     print('PoC Eligibility:')
-    print(f"successfully targeted   {init_target} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/init_target:.0f} blocks)")
+    tgt_percent_str = ''
+    if init_target:
+        tgt_percent_str = f"(every {(chals[0]['height']-chals[-1]['height'])/init_target:.0f} blocks)"
+    print(f"successfully targeted   {init_target} times in {(chals[0]['height']-chals[-1]['height'])} blocks {tgt_percent_str}")
     print(f"\tlongest untargeted stretch: {max_target_delta:4d} blocks")
-    print(f"challenger receipt txn  {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks (every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.0f} blocks)")
+    chal_percent_str = ''
+    if challenger_count:
+        chal_percent_str = f"(every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.0f} blocks)"
+    print(f"challenger receipt txn  {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks {chal_percent_str}")
     print(f"\tlongest stretch without challenger receipt: {max_challenger_delta:4d} blocks")
     print(f"\thotspot was untargetable for: {untargetable_count} blocks ({untargetable_count*100/(chals[0]['height']-chals[-1]['height']):.1f}% of blocks)")
 
@@ -80,6 +87,10 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
     print(f"Hop | planned | tested (%) | passed (%) |")
     print(f'-----------------------------------------')
     for i in range(0, 5):
+        if not planned_count[i]:
+            print(f"{i + 1:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ( {'N/A':3}) | {passed_count[i]:3d} ( {'N/A'}) |")
+            continue
+
         print(f"{i+1:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) | {passed_count[i]:3d} ({passed_count[i]*100/planned_count[i]:3.0f}%) |")
 
 def pocv10_violations(hotspot, chals):

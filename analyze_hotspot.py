@@ -92,8 +92,8 @@ def pocv10_violations(hotspot, chals):
     H = Hotspots()
     haddr = hotspot['address']
     hlat, hlng = hotspot['lat'], hotspot['lng']
-    transmits_w = dict(total=0, bad_rssi=0, bad_snr=0, not_valid=0)
-    receives_w = dict(total=0, bad_rssi=0, bad_snr=0, not_valid=0)
+    transmits_w = dict(total=0, bad_rssi=0, bad_snr=0, is_valid_present=0, not_valid=0)
+    receives_w = dict(total=0, bad_rssi=0, bad_snr=0, is_valid_present=0, not_valid=0)
     poc_rcv = dict(total=0, bad_rssi=0, bad_snr=0)
     bad_neighbors = dict()
 
@@ -120,10 +120,10 @@ def pocv10_violations(hotspot, chals):
                     if w['signal'] < snr_rssi_lim:
                         transmits_w['bad_snr'] += 1
                         bad_neighbors[w['gateway']]['snr'] += 1
-                    if not 'is_valid' in w:
-                        print(f"transmits: no is_valid field for {w}")
-                    if 'is_valid' in w and not w['is_valid']:
-                        transmits_w['not_valid'] += 1
+                    if 'is_valid' in w:
+                        transmits_w['is_valid_present'] += 1
+                        if not w['is_valid']:
+                            transmits_w['not_valid'] += 1
 
                 if p['receipt'] and transmitter:
                     dist = utils.haversine_km(
@@ -165,20 +165,20 @@ def pocv10_violations(hotspot, chals):
                     if w['signal'] < snr_rssi_lim:
                         receives_w['bad_snr'] += 1
                         bad_neighbors[p['challengee']]['snr'] += 1
-                    if not 'is_valid' in w:
-                        print(f"receives: no is_valid field for {w}")
-                    if 'is_valid' in w and not w['is_valid']:
-                        receives_w['not_valid'] += 1
+                    if 'is_valid' in w:
+                        receives_w['is_valid_present'] += 1
+                        if not w['is_valid']:
+                            receives_w['not_valid'] += 1
             transmitter = p['challengee']
 
 
     print(f"PoC v10 failures for {hotspot['name']}")
 
     print(F"SUMMARY")
-    print(f"Category                   | Total | bad RSSI (%) | bad SNR (%) | !is_valid (%)")
-    print(f"-------------------------------------------------------------------------------")
-    print(f"Witnesses to hotspot >300m | {transmits_w['total']:5d} | {transmits_w['bad_rssi']:4d} ({transmits_w['bad_rssi']*100/max(1, transmits_w['total']):3.0f}%)  | {transmits_w['bad_snr']:4d} ({transmits_w['bad_snr']*100/max(1, transmits_w['total']):3.0f}%) | {transmits_w['not_valid']:4d} ({transmits_w['not_valid']*100/max(1, transmits_w['total']):3.0f}%) |")
-    print(f"Hotspot witnessing  >300m  | {receives_w['total']:5d} | {receives_w['bad_rssi']:4d} ({receives_w['bad_rssi']*100/max(1, receives_w['total']):3.0f}%)  | {receives_w['bad_snr']:4d} ({receives_w['bad_snr']*100/max(1, receives_w['total']):3.0f}%) | {receives_w['not_valid']:4d} ({receives_w['not_valid']*100/max(1, receives_w['total']):3.0f}%) |")
+    print(f"Category                   | Total | bad RSSI (%) | bad SNR (%) | is_valid_present | not_valid (%)")
+    print(f"--------------------------------------------------------------------------------------------------")
+    print(f"Witnesses to hotspot >300m | {transmits_w['total']:5d} | {transmits_w['bad_rssi']:4d} ({transmits_w['bad_rssi']*100/max(1, transmits_w['total']):3.0f}%)  | {transmits_w['bad_snr']:4d} ({transmits_w['bad_snr']*100/max(1, transmits_w['total']):3.0f}%) | {transmits_w['is_valid_present']:16d} | {transmits_w['not_valid']:4d} ({transmits_w['not_valid']*100/max(1, transmits_w['is_valid_present']):3.0f}%) |")
+    print(f"Hotspot witnessing  >300m  | {receives_w['total']:5d} | {receives_w['bad_rssi']:4d} ({receives_w['bad_rssi']*100/max(1, receives_w['total']):3.0f}%)  | {receives_w['bad_snr']:4d} ({receives_w['bad_snr']*100/max(1, receives_w['total']):3.0f}%) | {receives_w['is_valid_present']:16d} | {receives_w['not_valid']:4d} ({receives_w['not_valid']*100/max(1, receives_w['is_valid_present']):3.0f}%) |")
     print(f"Hotspot PoC receipts       | {poc_rcv['total']:5d} | {poc_rcv['bad_rssi']:4d} ({poc_rcv['bad_rssi']*100/max(1, poc_rcv['total']):3.0f}%)  | {poc_rcv['bad_snr']:4d} ({poc_rcv['bad_snr']*100/max(1, poc_rcv['total']):3.0f}%) |")
 
     print()

@@ -42,8 +42,9 @@ def load_hotspots(force=False):
             raise FileNotFoundError
         with open('hotspots.json', 'r') as fd:
             dat = json.load(fd)
-            if time.time() - dat['time'] > 48*3600:
-                print(f"-W- hotspot cache is over 2 days old consider refreshing 'python3 utils.py -x refresh_hotspots'")
+            if time.time() - dat['time'] > 72*3600:
+                # print(f"-W- hotspot cache is over 2 days old consider refreshing 'python3 utils.py -x refresh_hotspots'")
+                raise FileNotFoundError
             return dat['hotspots']
     except FileNotFoundError as e:
         with open('hotspots.json', 'w') as fd:

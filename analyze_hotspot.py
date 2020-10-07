@@ -5,6 +5,7 @@ Functions to print information about a specific hotspot
 
 """
 import argparse
+
 import utils
 from classes.Hotspots import Hotspots
 
@@ -16,7 +17,7 @@ def __heading2str__(heading):
     return f"{heading:3.0f} {headingstr[idx]:>2}"
 
 
-def poc_summary(hotspot, chals, expected_chal_interval=120):
+def poc_summary(hotspot, chals):
 
     haddr = hotspot['address']
     init_target = 0
@@ -80,18 +81,26 @@ def poc_summary(hotspot, chals, expected_chal_interval=120):
         chal_percent_str = f"(every {(chals[0]['height']-chals[-1]['height'])/challenger_count:.0f} blocks)"
     print(f"challenger receipt txn  {challenger_count} times in {(chals[0]['height']-chals[-1]['height'])} blocks {chal_percent_str}")
     print(f"\tlongest stretch without challenger receipt: {max_challenger_delta:4d} blocks")
-    print(f"\thotspot was untargetable for: {untargetable_count} blocks ({untargetable_count*100/(chals[0]['height']-chals[-1]['height']):.1f}% of blocks)")
+    if chals[0]['height']-chals[-1]['height']:
+        print(f"\thotspot was untargetable for: {untargetable_count} blocks ({untargetable_count*100/(chals[0]['height']-chals[-1]['height']):.1f}% of blocks)")
 
     print()
     print(f"PoC Hop Summary:")
     print(f"Hop | planned | tested (%) | passed (%) |")
+    #print(f"    |         |   \\planned |    \\tested |")
     print(f'-----------------------------------------')
     for i in range(0, 5):
+        line = f"{i + 1:3} | {planned_count[i]:6d}  |"
         if not planned_count[i]:
-            print(f"{i + 1:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ( {'N/A':3}) | {passed_count[i]:3d} ( {'N/A'}) |")
-            continue
+            line += f" {tested_count[i]:3d} ( {'N/A':3}) | {passed_count[i]:3d} ( {'N/A'}) |"
+        else:
+            line += f" {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) |"
+            if not tested_count[i]:
+                line += f" {passed_count[i]:3d} ( {'N/A'}) |"
+            else:
+                line += f' {passed_count[i]:3d} ({passed_count[i] * 100 / tested_count[i]:3.0f}%) |'
+        print(line)
 
-        print(f"{i+1:3} | {planned_count[i]:6d}  | {tested_count[i]:3d} ({tested_count[i]*100/planned_count[i]:3.0f}%) | {passed_count[i]:3d} ({passed_count[i]*100/planned_count[i]:3.0f}%) |")
 
 def pocv10_violations(hotspot, chals):
     """
@@ -211,11 +220,6 @@ def poc_reliability(hotspot, challenges):
     H = Hotspots()
     haddr = hotspot['address']
 
-    # days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
-    # hours = int(round(remainder / 3600, 0))
-    # print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
-    #
-
     # iterate through challenges finding actual interactions with this hotspot
     results_tx = dict()  # key = tx addr, value = [pass, fail]
     results_rx = dict()  # key = rx addr, value = [pass, fail]
@@ -257,7 +261,11 @@ def poc_reliability(hotspot, challenges):
             print(f"{'from transmitting hotspot':30} | owner | {'dist km'} | {'heading'} | recv/ttl | recv % |")
         print("-" * 80)
 
-        for h in results.keys():
+        # print in descending order
+        sort_keys = [(results[r][0]+results[r][1], r) for r in results]
+        sort_keys.sort(reverse=True)
+
+        for h in [sk[1] for sk in sort_keys]:
             ttl = results[h][0] + results[h][1]
             all_ttl += ttl
             all_pass += results[h][0]
@@ -318,15 +326,15 @@ def main():
     challenges = challenges[:args.challenges]
     days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
     hours = int(round(remainder / 3600, 0))
-    print(
-        f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
+    print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")
 
+    if args.x == 'poc_summary':
+        poc_summary(hotspot, challenges)
     if args.x == 'poc_reliability':
         poc_reliability(hotspot, challenges)
-    elif args.x == 'poc_v10':
+    if args.x == 'poc_v10':
         pocv10_violations(hotspot, challenges)
-    elif args.x == 'poc_summary':
-        poc_summary(hotspot, challenges)
+
 
 
 if __name__ == '__main__':

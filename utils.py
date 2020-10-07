@@ -13,7 +13,7 @@ def api_call(base='https://api.helium.io/v1/', path=''):
     for i in range(0, 3):
         try:
             return json.load(urllib.request.urlopen(url))
-        except urllib.error.HTTPError as e:
+        except (urllib.error.HTTPError, json.JSONDecodeError) as e:
             time.sleep(.25 + 1 * i)
 
 
@@ -32,6 +32,13 @@ def load_challenges(haddr, numchalls=500, cursor=None):
         chals.extend(result['data'])
         if not cursor:
             break
+    too_old_idx = None
+    for i in range(0, len(chals)):
+        if chals[i]['height'] < 430000:
+            too_old_idx = i
+            break
+    if too_old_idx is not None:
+        chals = chals[:too_old_idx]
 
     return chals
 
@@ -45,8 +52,10 @@ def load_hotspots(force=False):
             if time.time() - dat['time'] > 72*3600:
                 # print(f"-W- hotspot cache is over 2 days old consider refreshing 'python3 utils.py -x refresh_hotspots'")
                 raise FileNotFoundError
+            if not dat['hotspots']:
+                raise FileNotFoundError
             return dat['hotspots']
-    except FileNotFoundError as e:
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         with open('hotspots.json', 'w') as fd:
             cursor = None
             hotspots = []

@@ -290,9 +290,9 @@ def poc_reliability(hotspot, challenges):
 
         if other_ttl:
             print(f"other ({other_cnt:2}){' ' * 20} |  N/A  | {dist_min:4.1f}-{dist_max:2.0f} |   N/A   | {other_pass:3d}/{other_ttl:3d}  | {other_pass / other_ttl * 100:5.0f}% | ")
-
-        print(f"{' ' * 40}{' ' * 10}         ---------------------")
-        print(f"{' ' * 40}{' '*10}   TOTAL | {all_pass:3d}/{all_ttl:4d} | {all_pass / all_ttl * 100:5.0f}% | ")
+        if all_ttl:
+            print(f"{' ' * 40}{' ' * 10}         ---------------------")
+            print(f"{' ' * 40}{' '*10}   TOTAL | {all_pass:3d}/{all_ttl:4d} | {all_pass / all_ttl * 100:5.0f}% | ")
 
     summary_table(results_tx, hotspot_transmitting=True)
     print()
@@ -324,6 +324,9 @@ def main():
 
     challenges = utils.load_challenges(hotspot['address'], args.challenges)
     challenges = challenges[:args.challenges]
+    if len(challenges) < 2:
+        print(f"ERROR could not load challenges, either hotspot has been offline too long or you need to increase --challenge arguement")
+        return
     days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
     hours = int(round(remainder / 3600, 0))
     print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")

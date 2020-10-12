@@ -134,3 +134,4 @@ dmypy.json
 .csv
 .secret
 .data
+hotspots.json

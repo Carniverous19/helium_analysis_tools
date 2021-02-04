@@ -179,7 +179,7 @@ def challenger_details(hotspot, chals, smry_only=False):
     print(f"summary stats")
     print(f"challenger address:        {hotspot['address']}")
     print(f"challenger listening_addr: {hotspot['status']['listen_addrs'][0]}")
-    print(f'lone wolfs in dense areas: {unsuspected_lone_wolfs:<3d}/{dense_challenges:3d}')
+    # print(f'lone wolfs in dense areas: {unsuspected_lone_wolfs:<3d}/{dense_challenges:3d}')
     print(f"blocks between chalng avg: {(newest_block - oldest_block) / num_poc_rcts:.0f}")
     print(f"                   median: {statistics.median(block_deltas):.0f}")
     print(f"          75th-percentile: {statistics.quantiles(block_deltas)[-1]:.0f}")
@@ -272,7 +272,7 @@ def witness_detail(hotspot, chals, smry_only=False):
 def main():
     parser = argparse.ArgumentParser("analyze hotspots", add_help=True)
     parser.add_argument('-x', help='report to run', choices=['beacons', 'witnesses', 'challenges'], required=True)
-    parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=500, type=int)
+    parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=400, type=int)
     parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')
     parser.add_argument('-a', '--address', help='hotspot address to analyze')
     parser.add_argument('-d', '--details', help='return detailed report (listing each activity)', action='store_true')

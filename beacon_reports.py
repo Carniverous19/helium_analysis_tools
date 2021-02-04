@@ -16,7 +16,10 @@ def transmit_details(hotspot, challenges, smry_only=False):
     """
     results = []
     vars = utils.api_call(path='vars').get('data', dict())
+    haddr = hotspot['address']
     H = Hotspots()
+    H.update_reference_hspot(address=haddr)
+    hotspot = H.get_hotspot_by_addr(haddr)
     print(f"Beacons FROM: {hotspot['name']}")
 
     if not smry_only:
@@ -124,7 +127,10 @@ def transmit_details(hotspot, challenges, smry_only=False):
 
 
 def challenger_details(hotspot, chals, smry_only=False):
+    haddr = hotspot['address']
     H = Hotspots()
+    H.update_reference_hspot(address=haddr)
+    hotspot = H.get_hotspot_by_addr(haddr)
     print(f"Hotspot: {hotspot['name']}")
     if not smry_only:
         print(f"{'time':14} | {'block':7} | blck Δ | {'challengee':25} | scale | rct | wtns ")
@@ -182,7 +188,11 @@ def challenger_details(hotspot, chals, smry_only=False):
 def witness_detail(hotspot, chals, smry_only=False):
     haddr = hotspot['address']
     H = Hotspots()
+    H.update_reference_hspot(address=haddr)
+    hotspot = H.get_hotspot_by_addr(haddr)
     vars = utils.api_call(path='vars')['data']
+    print()
+    print(f"Witnesses for: {hotspot['name']}")
     if not smry_only:
         print(f"{'time':14} | {'block':7} | {'transmitting hotspot':25} | dist km | valid? |  snr  | rssi | RUs  | inval reason")
 
@@ -233,7 +243,7 @@ def witness_detail(hotspot, chals, smry_only=False):
             idx_sort.append((tx_smry[k]['RUs'], k))
         idx_sort.sort()
         idx_sort = [x[1] for x in idx_sort[::-1]]
-        print(f"{'transmitting hotspot':25} | scale | dist km | heading | valids | invlds | RUs")
+        print(f"{'transmitting hotspot':25} | scale | owner | dist km | heading | valids | invlds | RUs")
 
         earning_by_compass = dict()
 
@@ -245,9 +255,11 @@ def witness_detail(hotspot, chals, smry_only=False):
                 earning_by_compass[compass] = 0
             earning_by_compass[compass] += tx_smry[addr]['RUs']
             heading = round(heading / 15, 0) * 15
-
+            owner = 'same'
+            if hotspot['owner'] != txer['owner']:
+                owner = txer['owner'][-5:]
             heading_str = f"{heading:3.0f}  {compass:2}"
-            print(f"{txer['name'][:25]:25} | {txer['reward_scale']:5.2f} | {dist:7.1f} | {heading_str:7} | {tx_smry[addr]['valid_cnt']:6} | {tx_smry[addr]['invalid_cnt']:6} | {tx_smry[addr]['RUs']:.2f}")
+            print(f"{txer['name'][:25]:25} | {txer['reward_scale']:5.2f} | {owner:5} | {dist:7.1f} | {heading_str:7} | {tx_smry[addr]['valid_cnt']:6} | {tx_smry[addr]['invalid_cnt']:6} | {tx_smry[addr]['RUs']:.2f}")
 
         print()
         print(f"Earnings by compass heading")

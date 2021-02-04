@@ -41,3 +41,7 @@ class Hotspots:
 
     def get_hotspots(self):
         return self.hotspots
+
+
+if __name__ == '__main__':
+    H = Hotspots(force=True)

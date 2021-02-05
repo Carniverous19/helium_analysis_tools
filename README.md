@@ -31,7 +31,7 @@ Ignore this file and associated reports unless you need to use them for legacy p
 ## beacon_reports.py
 This is the main report generating tool and gives useful reports on an individual hotspots PoC and challenge creation activity.
 Note this code allows you to specify either hotspot name (with dashes) or hotspot address.
-It is suggested to always use the hotspot address as there is no guarantee that a hotspot has a unique name (there are already 3 conflicts among ~8,500 hotspots).
+It is suggested to always use the hotspot address as there is no guarantee that a hotspot has a unique name (there are already 16 conflicts among ~17,500 hotspots).
 If there is a hotspot naming conflict only the last hotspot with that name returned will be considered.
 
 see 
@@ -70,7 +70,7 @@ Column descriptions:
  - **scale**: This is the *transmit_reward_scale* from HIP17 of the transmitting hotspot.  See [HIP17](https://github.com/helium/HIP/blob/master/0017-hex-density-based-transmit-reward-scaling.md) for more details on how this affects witness rewards.
  - **owner**: This is the last 5 digits of the hotspot's owner address if the owner is different from the refrence hotspot.  It will list "same" if the owner is the same.
  - **dist km**: This is the distance between the transmitting hotspot and reference hotspot in km using the cache'd hotspot locations and haversine formula.
- - **heading**: This column lists the heading from reference hotspot to transmitter in degrees (rounded to 15 degrees) and compass heading.
+ - **heading**: This column lists the heading from reference hotspot to transmitter in degrees and compass heading.
  - **valids**: This is the number of times the reference hotspot witnessed the transmitting hotspot and the witness was valid and earned HNT.
  - **invlds**: This is the number of times the reference hotspot witnessed the transmitting hotspot and the witness was invalid and did not earn HNT.
  - **RUs**: This is the estimated number of reward units earned for witnessing the transmitting hotspot over the number of PoCs analyzed.  Note that reward units do not equal HNT but are proportional to HNT earned.  See [HIP15](https://github.com/helium/HIP/blob/master/0015-beaconing-rewards.md) for a definition of reward units and how they relate to earnings.
@@ -128,7 +128,7 @@ A sample table is shown below:
 
 Column descriptions:
  - **time**: This is the time in your local timezone (or the operating systems configured timezone) when the witness occurred
- - **bock**: This is the block height reported in the witness transaction
+ - **block**: This is the block height reported in the witness transaction
  - **transmitting hotspot**: This is the name of the hotspot that beaconed and can be witnessed by the reference hotspot.  Note if the name is longer than 25-characters it will be clipped.
  - **dist km**: This is the distance between the transmitting hotspot and reference hotspot in km using the cache'd hotspot locations and haversine formula.
  - **valid?**: This will be `valid` if the witness was valid or `INVAL` if the witness was invalid, see `inval reason` fora  description of why a witness was invalid
@@ -248,7 +248,7 @@ A sample table is shown below:
 
 Column descriptions:
  - **Beacon Time**: This is the time in your local timezone (or the operating systems configured timezone) when the beacon occurred
- - **bock**: This is the block height for the challenge receipt
+ - **block**: This is the block height for the challenge receipt
  - **blck Δ**: This is the block delta or number of blocks between the beacon at the current row and the previous row (in the future). This should average to ~240 blocks but there is no lower or upper limit and randomness means you may see low or high numbers occasionally without it being an bug.
  - **Valid**: This is the number of valid witnesses the beacon had.
  - **inval**: This is the number of invalid witnesses for RSSI or SNR PoCv10 violations, *not* invalid for being too close.  There are beacon reward penalties for these.
@@ -312,7 +312,7 @@ A sample table is shown below:
 
 Column descriptions:
  - **time**: This is the time in your local timezone (or the operating systems configured timezone) when the challenge occurred
- - **bock**: This is the block height for the challenge receipt
+ - **block**: This is the block height for the challenge receipt
  - **blck Δ**: This is the block delta or number of blocks between the challenge at the current row and the previous row (in the future).  This number needs to be <1000 or `poc_v4_target_challenge_age` for the hotspot to be eligible to receive challenges.  If this number is above the chain var the block delta will have `**` after it.
  - **challengee**: This is the name of the hotspot that received the challenge and beaconed.
  - **scale**: This is the *transmit_rewards_scale* for the challengee.  If this number is < 1.00 it means there are hotspots nearby the challengee.

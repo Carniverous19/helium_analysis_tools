@@ -130,7 +130,9 @@ dmypy.json
 
 
 # custom
+hotspots.json
 *.json
 *.csv
 *.secret
 *.data
+

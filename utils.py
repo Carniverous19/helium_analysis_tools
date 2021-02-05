@@ -43,6 +43,30 @@ def load_challenges(haddr, numchalls=500, cursor=None):
     return chals
 
 
+def hip15_rewards(nwitnesses, vars):
+    """
+    Calculates HIP15 rewward units for transmitter and receiver
+    :param nwitnesses:
+    :param vars: chain variables or a dict contain those used for hip15
+    :return:
+    """
+    if nwitnesses == 0:
+        return 0, 0
+    tx_ru = 1
+    rx_ru = 1
+    N = vars.get('witness_redundancy', 4)
+    r = vars.get('poc_reward_decay_rate', 0.8)
+
+    hip15_rus = (N - (1 - pow(r, nwitnesses - N))) / nwitnesses
+    if nwitnesses <= N:
+        rw_tx = nwitnesses / N
+        rw_rx = 1
+    else:
+        rw_tx = 1 + (1 - pow(r, nwitnesses - N))
+        rw_rx = (N - (1 - pow(r, nwitnesses - N))) / nwitnesses
+
+    return rw_tx, rw_rx
+
 def load_hotspots(force=False):
     try:
         if force:
@@ -81,7 +105,10 @@ def load_hotspots(force=False):
             json.dump(dat, fd, indent=2)
         return hotspots
 
-
+def heading_to_compass(heading_degrees):
+    idx = int(round(heading_degrees / 45)) % 8
+    headingstr = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    return headingstr[idx]
 
 def haversine_km(lat1, lon1, lat2, lon2, return_heading=False):
     """
@@ -166,7 +193,7 @@ def snr_min_rssi(snr):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("simple utilities")
-    parser.add_argument('-x', choices=['refresh_hotspots'], help="action to take")
+    parser.add_argument('-x', choices=['refresh_hotspots'], help="action to take", default='refresh_hotspots')
     args = parser.parse_args()
     if args.x == 'refresh_hotspots':
         load_hotspots(True)

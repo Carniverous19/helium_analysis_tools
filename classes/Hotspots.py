@@ -29,6 +29,16 @@ class Hotspots:
                 hspots.append(h)
         return h
 
+    def update_reference_hspot(self, name=None, address=None):
+        if name:
+            address = self.get_hotspot_by_name(name)
+
+        hspot_info = api_call(path=f'/hotspots/{address}').get('data', None)
+        if hspot_info:
+            self.hspot_by_addr[hspot_info['address']] = hspot_info
+            self.hspot_by_name[hspot_info['name']] = hspot_info
+
+
 
     def get_hotspot_witnesses(self, address=None, name=None):
         h = None
@@ -41,3 +51,7 @@ class Hotspots:
 
     def get_hotspots(self):
         return self.hotspots
+
+
+if __name__ == '__main__':
+    H = Hotspots(force=True)

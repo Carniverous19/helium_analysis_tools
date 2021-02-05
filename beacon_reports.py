@@ -272,7 +272,7 @@ def witness_detail(hotspot, chals, smry_only=False):
 def main():
     parser = argparse.ArgumentParser("analyze hotspots", add_help=True)
     parser.add_argument('-x', help='report to run', choices=['beacons', 'witnesses', 'challenges'], required=True)
-    parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=400, type=int)
+    parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:500', default=500, type=int)
     parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')
     parser.add_argument('-a', '--address', help='hotspot address to analyze')
     parser.add_argument('-d', '--details', help='return detailed report (listing each activity)', action='store_true')

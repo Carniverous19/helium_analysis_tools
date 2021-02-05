@@ -130,7 +130,7 @@ dmypy.json
 
 
 # custom
-.json
-.csv
-.secret
-.data
+*.json
+*.csv
+*.secret
+*.data

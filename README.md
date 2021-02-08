@@ -7,7 +7,7 @@ To install simply run
 
     git clone https://github.com/Carniverous19/helium_analysis_tools.git
     
-At time of writing only Python3.7+ is required.
+At time of writing only Python3.8+ is required.
 
 # Tools
 A lot of these tools require a cache of hotspots from Helium's hotspot API.  

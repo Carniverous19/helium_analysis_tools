@@ -5,6 +5,9 @@ import time
 import argparse
 from math import radians, cos, sin, asin, sqrt, log10, ceil, degrees, atan2
 
+#compass_headings = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+compass_headings = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+
 def api_call(base='https://api.helium.io/v1/', path=''):
     if base[-1] != '/':
         base += '/'
@@ -106,9 +109,25 @@ def load_hotspots(force=False):
         return hotspots
 
 def heading_to_compass(heading_degrees):
-    idx = int(round(heading_degrees / 45)) % 8
-    headingstr = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-    return headingstr[idx]
+
+    idx = int(round(heading_degrees / (360 / len(compass_headings)))) % len(compass_headings)
+
+    return compass_headings[idx]
+
+
+def compass_to_heading(compass_heading):
+    compass_heading = compass_heading.upper()
+    idx = None
+    try:
+        idx = compass_headings.index(compass_heading)
+    except ValueError:
+        pass
+
+    if idx is None:
+        return idx
+
+    return 360 / len(compass_headings) * idx
+
 
 def haversine_km(lat1, lon1, lat2, lon2, return_heading=False):
     """

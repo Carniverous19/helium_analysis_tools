@@ -1,9 +1,20 @@
+#!/usr/bin/env python3.8
 
 import argparse
+import math
 import statistics
 import datetime as dt
 from classes.Hotspots import Hotspots
 import utils
+
+has_mpl = False
+show_plots = False
+try:
+    import matplotlib.pyplot as plt
+    has_mpl = True
+except ModuleNotFoundError as e:
+    # print(f"run `python3 -m pip install matplotlib` to enable plotting")
+    pass
 
 
 
@@ -24,7 +35,7 @@ def transmit_details(hotspot, challenges, smry_only=False):
 
     if not smry_only:
         print(f"Individual Beacons ==========")
-        print(f"{'Beacon Time':14} | {'block':7} | blck Δ | Valid | inval | near | RU's | witness bar chart")
+        print(f"{'Beacon Time':14} | {'block':7} | blck Δ | p2p port | Valid | inval | near | RU's | witness bar chart")
     block_deltas = []
     last_block = None
     for c in challenges:
@@ -67,8 +78,17 @@ def transmit_details(hotspot, challenges, smry_only=False):
             tx = tx * beacon['valid'] / (beacon['valid'] + beacon['invalid']) * hotspot['reward_scale']
         beacon['RUs'] = tx
         results.append(beacon)
+
+        p2p_str = '????'
+        challenger_addrs = H.get_hotspot_by_addr(c['challenger'])['status']['listen_addrs']
+        if challenger_addrs:
+            if '/p2p-circuit/' in challenger_addrs[0]:
+                p2p_str = 'circuit'
+            elif 'tcp/' in challenger_addrs[0]:
+                p2p_str = challenger_addrs[0].split('/')[-1]
+
         if not smry_only:
-            print(f"{beacon['date']} | {beacon['height']:7} | {block_delta_str:6} | {beacon['valid']:5} | {beacon['invalid']:5} | {beacon['close']:4} | {beacon['RUs']:4.2f} | {'V' * beacon['valid'] + 'i' * beacon['invalid'] + 'c' * beacon['close']}")  # + '-' * (25 - beacon['valid'] - beacon['invalid'] - beacon['close'])}")
+            print(f"{beacon['date']} | {beacon['height']:7} | {block_delta_str:6} | {p2p_str:>8} | {beacon['valid']:5} | {beacon['invalid']:5} | {beacon['close']:4} | {beacon['RUs']:4.2f} | {'V' * beacon['valid'] + 'i' * beacon['invalid'] + 'c' * beacon['close']}")  # + '-' * (25 - beacon['valid'] - beacon['invalid'] - beacon['close'])}")
         #print(beacon)
 
 
@@ -179,6 +199,7 @@ def challenger_details(hotspot, chals, smry_only=False):
     print(f"summary stats")
     print(f"challenger address:        {hotspot['address']}")
     print(f"challenger listening_addr: {hotspot['status']['listen_addrs'][0]}")
+    print(f"latest challenger block:   {newest_block}")
     # print(f'lone wolfs in dense areas: {unsuspected_lone_wolfs:<3d}/{dense_challenges:3d}')
     print(f"blocks between chalng avg: {(newest_block - oldest_block) / num_poc_rcts:.0f}")
     print(f"                   median: {statistics.median(block_deltas):.0f}")
@@ -258,27 +279,47 @@ def witness_detail(hotspot, chals, smry_only=False):
             owner = 'same'
             if hotspot['owner'] != txer['owner']:
                 owner = txer['owner'][-5:]
-            heading_str = f"{heading:3.0f}  {compass:2}"
+            heading_str = f"{heading:3.0f} {compass:3}"
             print(f"{txer['name'][:25]:25} | {txer['reward_scale']:5.2f} | {owner:5} | {dist:7.1f} | {heading_str:7} | {tx_smry[addr]['valid_cnt']:6} | {tx_smry[addr]['invalid_cnt']:6} | {tx_smry[addr]['RUs']:.2f}")
 
         print()
         print(f"Earnings by compass heading")
         print(f"heading |   RUs  | bar chart")
         max_compass = max(list(earning_by_compass.values()))
-        for h in earning_by_compass:
-            print(f"   {h:4} | {earning_by_compass[h]:6.2f} | {'X' * round(32 * earning_by_compass[h] / max_compass) }")
+        for h in utils.compass_headings:
+            earnings = earning_by_compass.get(h, 0)
+            print(f"   {h:4} | {earnings:6.2f} | {'X' * round(32 * earnings / max_compass) }")
+
+        if has_mpl and show_plots:
+            ax = plt.subplot(111, projection='polar')
+            ax.set_theta_offset(math.pi / 2)
+            ax.set_theta_direction(-1)
+            width = 2 * math.pi / len(utils.compass_headings)
+            theta = [math.radians(utils.compass_to_heading(h)) for h in utils.compass_headings]
+            earnings = [math.sqrt(earning_by_compass.get(h, 0)) for h in utils.compass_headings]
+            earnings = [(earning_by_compass.get(h, 0)) for h in utils.compass_headings]
+
+            ax.bar(theta, earnings, width=width, bottom=0.0)
+            ax.set_xticks(theta)
+            ax.set_yticks([])
+            ax.set_xticklabels(utils.compass_headings)
+            plt.title(f"{hotspot['name']} RUs by compass heading")
+            plt.show()
 
 
 def main():
+    global show_plots
     parser = argparse.ArgumentParser("analyze hotspots", add_help=True)
     parser.add_argument('-x', help='report to run', choices=['beacons', 'witnesses', 'challenges'], required=True)
     parser.add_argument('-c', '--challenges', help='number of challenges to analyze, default:400', default=400, type=int)
     parser.add_argument('-n', '--name', help='hotspot name to analyze with dashes-between-words')
     parser.add_argument('-a', '--address', help='hotspot address to analyze')
     parser.add_argument('-d', '--details', help='return detailed report (listing each activity)', action='store_true')
+    parser.add_argument('-p', '--plot', help='show popup graphs and plots where applicable and if matplotlib library is installed', action='store_true')
 
     args = parser.parse_args()
 
+    show_plots = args.plot
     H = Hotspots()
     hotspot = None
     if args.name:

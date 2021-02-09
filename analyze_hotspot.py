@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.8
 """
 
 Functions to print information about a specific hotspot

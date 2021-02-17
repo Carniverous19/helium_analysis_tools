@@ -32,12 +32,17 @@ def transmit_details(hotspot, challenges, smry_only=False):
     H.update_reference_hspot(address=haddr)
     hotspot = H.get_hotspot_by_addr(haddr)
     print(f"Beacons FROM: {hotspot['name']}")
+    print(f"tx_reward_scale: {hotspot['reward_scale']:.3f}")
 
     if not smry_only:
         print(f"Individual Beacons ==========")
         print(f"{'Beacon Time':14} | {'block':7} | blck Δ | p2p port | Valid | inval | near | RU's | witness bar chart")
     block_deltas = []
     last_block = None
+    total_RUs = 0
+
+    by_receiver = dict()
+
     for c in challenges:
         if c['path'][0]['challengee'] != hotspot['address']:
             continue  # I am not transmitter
@@ -49,7 +54,7 @@ def transmit_details(hotspot, challenges, smry_only=False):
         last_block = c['height']
 
         beacon = dict(date=None, height=c['height'], valid=0, invalid=0, close=0, RUs=0)
-        ts = c['time']
+
         if c['path'][0]['receipt']:
             ts = c['path'][0]['receipt']['timestamp'] / 1e9
         elif c['path'][0]['witnesses']:
@@ -64,21 +69,28 @@ def transmit_details(hotspot, challenges, smry_only=False):
             w_hspot = H.get_hotspot_by_addr(w['gateway'])
             if not w_hspot:
                 continue
+            by_receiver.setdefault(w['gateway'], dict(dist_km=9999, valid=0, invalid=0, near=0))
+
             dist_km = utils.haversine_km(w_hspot['lat'], w_hspot['lng'], hotspot['lat'], hotspot['lng'])
+            by_receiver[w['gateway']]['dist_km'] = dist_km
             if w['is_valid']:
                 beacon['valid'] += 1
+                by_receiver[w['gateway']]['valid'] += 1
             else:
                 if dist_km <= .32:
                     beacon['close'] += 1
+                    by_receiver[w['gateway']]['near'] += 1
                 else:
                     beacon['invalid'] += 1
+                    by_receiver[w['gateway']]['invalid'] += 1
+
         tx = 0
         if beacon['valid']:
             tx, _ = utils.hip15_rewards(beacon['valid'] + beacon['invalid'], vars)
             tx = tx * beacon['valid'] / (beacon['valid'] + beacon['invalid']) * hotspot['reward_scale']
         beacon['RUs'] = tx
         results.append(beacon)
-
+        total_RUs += tx
         p2p_str = '????'
         challenger_addrs = H.get_hotspot_by_addr(c['challenger'])['status']['listen_addrs']
         if challenger_addrs:
@@ -87,19 +99,37 @@ def transmit_details(hotspot, challenges, smry_only=False):
             elif 'tcp/' in challenger_addrs[0]:
                 p2p_str = challenger_addrs[0].split('/')[-1]
 
+
+
         if not smry_only:
             print(f"{beacon['date']} | {beacon['height']:7} | {block_delta_str:6} | {p2p_str:>8} | {beacon['valid']:5} | {beacon['invalid']:5} | {beacon['close']:4} | {beacon['RUs']:4.2f} | {'V' * beacon['valid'] + 'i' * beacon['invalid'] + 'c' * beacon['close']}")  # + '-' * (25 - beacon['valid'] - beacon['invalid'] - beacon['close'])}")
         #print(beacon)
 
+    if (not smry_only) and results:
+        print()
+        print(f'Witness reliability ======')
+        print(f"{'Witness name':25} | dist km | valid (%) | inval (%) ")
+        sorted_keys = []
+        for k in by_receiver.keys():
+            sorted_keys.append((by_receiver[k]['valid'], k))
+        sorted_keys.sort()
+        for item in sorted_keys[::-1]:
+            k = item[1]
+            wit = H.get_hotspot_by_addr(k)
+            print(f"{wit['name'][:25]:25} | {by_receiver[k]['dist_km']:7.2f} | {by_receiver[k]['valid']:2d} ({by_receiver[k]['valid']*100/len(results):3.0f}%) | {by_receiver[k]['invalid']:2d} ({by_receiver[k]['invalid']*100/len(results):3.0f}%) ")
 
+
+    listen_addr = 'NONE'
+    if hotspot['status']['listen_addrs']:
+        listen_addr = hotspot['status']['listen_addrs'][0]
     print()
     print(f"summary stats")
-    print(f"challenger address:        {hotspot['address']}")
-    print(f"challenger listening_addr: {hotspot['status']['listen_addrs'][0]}")
-    print(f"blocks between chalng avg: {statistics.mean(block_deltas):.0f}")
-    print(f"                   median: {statistics.median(block_deltas):.0f}")
-    print(f"          75th-percentile: {statistics.quantiles(block_deltas)[-1]:.0f}")
-    print(f"        range (min - max): {min(block_deltas)} - {max(block_deltas)}")
+    print(f"hotspot address:           {hotspot['address']}")
+    print(f"hotspot listening_addr:    {listen_addr}")
+    print(f"blocks between chalng avg: {statistics.mean(block_deltas) if block_deltas else -1:.0f}")
+    print(f"                   median: {statistics.median(block_deltas) if block_deltas else -1:.0f}")
+    print(f"          75th-percentile: {statistics.quantiles(block_deltas)[-1] if block_deltas else -1:.0f}")
+    print(f"        range (min - max): {min(block_deltas) if block_deltas else 0} - {max(block_deltas) if block_deltas else 0}")
 
     if smry_only:
 
@@ -145,6 +175,8 @@ def transmit_details(hotspot, challenges, smry_only=False):
             print(
                 f"{block_age:>9} | {block_dict[k]['count']:4} | {block_dict[k]['valid']:5} | {block_dict[k]['invalid']:5} | {block_dict[k]['close']:4} | {block_dict[k]['RUs']:5.2f} | {'X' * block_dict[k]['count']} ")
 
+
+    print(f"total RU's earned: {total_RUs:.4f}")
 
 def challenger_details(hotspot, chals, smry_only=False):
     haddr = hotspot['address']
@@ -218,6 +250,7 @@ def witness_detail(hotspot, chals, smry_only=False):
         print(f"{'time':14} | {'block':7} | {'transmitting hotspot':25} | dist km | valid? |  snr  | rssi | RUs  | inval reason")
 
     tx_smry = dict()
+    total_RUs = 0
     for c in chals:
         p = c['path'][0]
         for w in p['witnesses']:
@@ -249,6 +282,7 @@ def witness_detail(hotspot, chals, smry_only=False):
                         reason = f'snr too high (snr:{w["snr"]:.1f}, rssi: {w["signal"]}<{min_rssi})'
                     else:
                         reason = 'unknown'
+                total_RUs += reward_units
                 if not smry_only:
                     print(f"{time_str:14} | {c['height']:7} | {transmitter_name[:25]:25} | {dist_km:6.1f}  | {valid:6} | {w['snr']:5.1f} | {w['signal']:4d} | {reward_units:4.2f} | {reason}")
 
@@ -286,10 +320,13 @@ def witness_detail(hotspot, chals, smry_only=False):
         print(f"Earnings by compass heading")
         print(f"heading |   RUs  | bar chart")
         max_compass = max(list(earning_by_compass.values()))
+        if max_compass == 0:
+            max_compass = 1
         for h in utils.compass_headings:
             earnings = earning_by_compass.get(h, 0)
             print(f"   {h:4} | {earnings:6.2f} | {'X' * round(32 * earnings / max_compass) }")
 
+        print(f"total RUs earned: {total_RUs:.4f}")
         if has_mpl and show_plots:
             ax = plt.subplot(111, projection='polar')
             ax.set_theta_offset(math.pi / 2)
@@ -297,7 +334,7 @@ def witness_detail(hotspot, chals, smry_only=False):
             width = 2 * math.pi / len(utils.compass_headings)
             theta = [math.radians(utils.compass_to_heading(h)) for h in utils.compass_headings]
             earnings = [math.sqrt(earning_by_compass.get(h, 0)) for h in utils.compass_headings]
-            earnings = [(earning_by_compass.get(h, 0)) for h in utils.compass_headings]
+            # earnings = [(earning_by_compass.get(h, 0)) for h in utils.compass_headings]
 
             ax.bar(theta, earnings, width=width, bottom=0.0)
             ax.set_xticks(theta)

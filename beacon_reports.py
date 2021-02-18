@@ -157,7 +157,8 @@ def transmit_details(hotspot, challenges, smry_only=False):
         block_interval = 3000
         print(f"Beacons by {block_interval} blocks ========")
         print(f"note may be partial last set of blocks")
-        start_block = results[0]['height']
+        if results:
+            start_block = results[0]['height']
         block_dict = dict()
         for res in results:
             date = int((start_block - res['height']) / block_interval)
@@ -227,15 +228,19 @@ def challenger_details(hotspot, chals, smry_only=False):
             print(f"{time_str:14} | {c['height']:7} | {block_delta_str:6} | {transmitter_name[:25]:25} | {transmitter['reward_scale']:5.2f} | {'YES' if c['path'][0]['receipt'] else 'no' :3} | {w_str:>4}")
 
         prev_rct_block = c['height']
+
+    listen_addr = 'NONE'
+    if hotspot['status']['listen_addrs']:
+        listen_addr = hotspot['status']['listen_addrs'][0]
     print()
     print(f"summary stats")
     print(f"challenger address:        {hotspot['address']}")
-    print(f"challenger listening_addr: {hotspot['status']['listen_addrs'][0]}")
+    print(f"challenger listening_addr: {listen_addr}")
     print(f"latest challenger block:   {newest_block}")
     # print(f'lone wolfs in dense areas: {unsuspected_lone_wolfs:<3d}/{dense_challenges:3d}')
-    print(f"blocks between chalng avg: {(newest_block - oldest_block) / num_poc_rcts:.0f}")
-    print(f"                   median: {statistics.median(block_deltas):.0f}")
-    print(f"          75th-percentile: {statistics.quantiles(block_deltas)[-1]:.0f}")
+    print(f"blocks between chalng avg: {(newest_block - oldest_block) / num_poc_rcts if num_poc_rcts else -1:.0f}")
+    print(f"                   median: {statistics.median(block_deltas) if block_deltas else -1:.0f}")
+    print(f"          75th-percentile: {statistics.quantiles(block_deltas)[-1] if block_deltas else -1:.0f}")
     print(f"        range (min - max): {min(block_deltas)} - {max(block_deltas)}")
 
 def witness_detail(hotspot, chals, smry_only=False):

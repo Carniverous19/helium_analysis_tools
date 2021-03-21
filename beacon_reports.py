@@ -6,6 +6,7 @@ import statistics
 import datetime as dt
 from classes.Hotspots import Hotspots
 import utils
+import json
 
 has_mpl = False
 show_plots = False
@@ -36,7 +37,7 @@ def transmit_details(hotspot, challenges, smry_only=False):
 
     if not smry_only:
         print(f"Individual Beacons ==========")
-        print(f"{'Beacon Time':14} | {'block':7} | blck Δ | p2p port | Valid | inval | near | RU's | witness bar chart")
+        print(f"{'Beacon Time':14} | {'block':7} | blck Δ | p2p port | Valid | inval | near | RU's | avg rssi | witness bar chart")
     block_deltas = []
     last_block = None
     total_RUs = 0
@@ -53,7 +54,7 @@ def transmit_details(hotspot, challenges, smry_only=False):
             block_delta_str = f"{block_delta}"
         last_block = c['height']
 
-        beacon = dict(date=None, height=c['height'], valid=0, invalid=0, close=0, RUs=0)
+        beacon = dict(date=None, height=c['height'], valid=0, invalid=0, close=0, RUs=0, signal=[])
 
         if c['path'][0]['receipt']:
             ts = c['path'][0]['receipt']['timestamp'] / 1e9
@@ -73,6 +74,8 @@ def transmit_details(hotspot, challenges, smry_only=False):
 
             dist_km = utils.haversine_km(w_hspot['lat'], w_hspot['lng'], hotspot['lat'], hotspot['lng'])
             by_receiver[w['gateway']]['dist_km'] = dist_km
+            beacon['signal'].append(w['signal'])
+
             if w['is_valid']:
                 beacon['valid'] += 1
                 by_receiver[w['gateway']]['valid'] += 1
@@ -99,10 +102,17 @@ def transmit_details(hotspot, challenges, smry_only=False):
             elif 'tcp/' in challenger_addrs[0]:
                 p2p_str = challenger_addrs[0].split('/')[-1]
 
-
-
         if not smry_only:
-            print(f"{beacon['date']} | {beacon['height']:7} | {block_delta_str:6} | {p2p_str:>8} | {beacon['valid']:5} | {beacon['invalid']:5} | {beacon['close']:4} | {beacon['RUs']:4.2f} | {'V' * beacon['valid'] + 'i' * beacon['invalid'] + 'c' * beacon['close']}")  # + '-' * (25 - beacon['valid'] - beacon['invalid'] - beacon['close'])}")
+            if len(beacon['signal']) > 0 :
+                rssi_avg = round(sum(beacon['signal']) / len(beacon['signal']), 2)
+            else:
+                rssi_avg = ""
+            beacons = 'V' * beacon['valid'] + 'i' * beacon['invalid'] + 'c' * beacon['close']
+            print(f"{beacon['date']} | {beacon['height']:7} | {block_delta_str:6}",
+                  f"| {p2p_str:>8} | {beacon['valid']:5} | {beacon['invalid']:5} |",
+                  f"{beacon['close']:4} | {beacon['RUs']:4.2f} |",
+                  f"{rssi_avg:8} | {beacons}")
+                  # + '-' * (25 - beacon['valid'] - beacon['invalid'] - beacon['close'])}")
         #print(beacon)
 
     if (not smry_only) and results:
@@ -358,7 +368,7 @@ def main():
     parser.add_argument('-a', '--address', help='hotspot address to analyze')
     parser.add_argument('-d', '--details', help='return detailed report (listing each activity)', action='store_true')
     parser.add_argument('-p', '--plot', help='show popup graphs and plots where applicable and if matplotlib library is installed', action='store_true')
-
+    parser.add_argument('--dump', help='dump challenges.json', action='store_true')
     args = parser.parse_args()
 
     show_plots = args.plot
@@ -380,6 +390,10 @@ def main():
     if len(challenges) < 2:
         print(f"ERROR could not load challenges, either hotspot has been offline too long or you need to increase --challenge arguement")
         return
+
+    if args.dump:
+        with open("challenges.json", "w") as f:
+            json.dump(challenges, f, indent=2)
     days, remainder = divmod(challenges[0]['time'] - challenges[-1]['time'], 3600 * 24)
     hours = int(round(remainder / 3600, 0))
     print(f"analyzing {len(challenges)} challenges from block {challenges[0]['height']}-{challenges[-1]['height']} over {days} days, {hours} hrs")

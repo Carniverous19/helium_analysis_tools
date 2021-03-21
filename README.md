@@ -229,22 +229,22 @@ A sample table is shown below:
 
     Beacons FROM: slow-burgundy-mandrill
     Individual Beacons ==========
-    Beacon Time    | block   | blck Δ | Valid | inval | near | RU's | witness bar chart
-    02-04 09:40:52 |  704903 | N/A    |     0 |     1 |    0 | 0.00 | i
-    02-04 04:15:59 |  704612 | 291    |     7 |     3 |    1 | 0.24 | VVVVVVViiic
-    02-04 03:58:43 |  704602 | 10     |     7 |     2 |    1 | 0.26 | VVVVVVViic
-    02-03 22:47:34 |  704324 | 278    |     9 |     2 |    1 | 0.29 | VVVVVVVVViic
-    02-03 22:13:11 |  704290 | 34     |     0 |     0 |    0 | 0.00 |
-    02-03 20:37:33 |  704199 | 91     |     0 |     0 |    0 | 0.00 |
-    02-03 16:24:33 |  703975 | 224    |     6 |     2 |    1 | 0.24 | VVVVVViic
-    02-03 09:55:19 |  703614 | 361    |    11 |     2 |    1 | 0.31 | VVVVVVVVVVViic
-    02-03 03:58:31 |  703229 | 385    |     6 |     3 |    1 | 0.22 | VVVVVViiic
-    02-02 22:53:09 |  703008 | 221    |     9 |     2 |    1 | 0.29 | VVVVVVVVViic
-    02-02 21:35:35 |  702940 | 68     |     0 |     0 |    0 | 0.00 |
-    02-02 19:32:59 |  702800 | 140    |     0 |     0 |    0 | 0.00 |
-    02-02 15:41:31 |  702530 | 270    |     2 |     2 |    1 | 0.10 | VViic
-    02-02 11:13:18 |  702270 | 260    |     3 |     1 |    0 | 0.15 | VVVi
-    02-02 10:29:05 |  702217 | 53     |     9 |     2 |    0 | 0.29 | VVVVVVVVVii
+    Beacon Time    | block   | blck Δ | Valid | inval | near | RU's | avg rssi | witness bar chart
+    02-04 09:40:52 |  704903 | N/A    |     0 |     1 |    0 | 0.00 |   -106.0 | i
+    02-04 04:15:59 |  704612 | 291    |     7 |     3 |    1 | 0.24 |  -108.32 | VVVVVVViiic
+    02-04 03:58:43 |  704602 | 10     |     7 |     2 |    1 | 0.26 |   -103.3 | VVVVVVViic
+    02-03 22:47:34 |  704324 | 278    |     9 |     2 |    1 | 0.29 |  -109.55 | VVVVVVVVViic
+    02-03 22:13:11 |  704290 | 34     |     0 |     0 |    0 | 0.00 |          |
+    02-03 20:37:33 |  704199 | 91     |     0 |     0 |    0 | 0.00 |          |
+    02-03 16:24:33 |  703975 | 224    |     6 |     2 |    1 | 0.24 |   -110.3 | VVVVVViic
+    02-03 09:55:19 |  703614 | 361    |    11 |     2 |    1 | 0.31 |   -103.5 | VVVVVVVVVVViic
+    02-03 03:58:31 |  703229 | 385    |     6 |     3 |    1 | 0.22 |   -101.1 | VVVVVViiic
+    02-02 22:53:09 |  703008 | 221    |     9 |     2 |    1 | 0.29 |  -108.33 | VVVVVVVVViic
+    02-02 21:35:35 |  702940 | 68     |     0 |     0 |    0 | 0.00 |          |
+    02-02 19:32:59 |  702800 | 140    |     0 |     0 |    0 | 0.00 |          |
+    02-02 15:41:31 |  702530 | 270    |     2 |     2 |    1 | 0.10 |   -110.5 | VViic
+    02-02 11:13:18 |  702270 | 260    |     3 |     1 |    0 | 0.15 |   -103.2 | VVVi
+    02-02 10:29:05 |  702217 | 53     |     9 |     2 |    0 | 0.29 |  -111.21 | VVVVVVVVVii
 
 Column descriptions:
  - **Beacon Time**: This is the time in your local timezone (or the operating systems configured timezone) when the beacon occurred
@@ -254,6 +254,7 @@ Column descriptions:
  - **inval**: This is the number of invalid witnesses for RSSI or SNR PoCv10 violations, *not* invalid for being too close.  There are beacon reward penalties for these.
  - **near**: This is the number of witnesses that are invalid for being too close to the transmitter.  There are no penalties for these and they are ignored in reward calculations.
  - **RU's**: This is the estimated number of reward units earned for this specific beacon. 
+ - **avg rssi**: This is the average RSSI for all witnesses
  - **witness bar chart**: This is a crude bar chart showing the number of witnesses for the beacon.  There will be a `V` for each valid witness, an `i` for each invalid witness, and a `c` for each witness that is to near or close to the transmitter.
  
 ### challenges

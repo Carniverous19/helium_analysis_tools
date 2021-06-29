@@ -267,7 +267,7 @@ There are two main reports the default report and the detailed report.
 
 to run the default `challenges` report run:
 
-    python3 beacon_reports.py -x beacons --address {hotspot address}
+    python3 beacon_reports.py -x challenges --address {hotspot address}
     
 There is one table for this report.  An example is shown below:
 

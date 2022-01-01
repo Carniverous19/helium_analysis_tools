@@ -8,15 +8,18 @@ from math import radians, cos, sin, asin, sqrt, log10, ceil, degrees, atan2
 
 #compass_headings = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 compass_headings = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
+headers = {'User-Agent': 'Helium Analysis Tools'}
 
 def api_call(base='https://api.helium.io/v1/', path=''):
     if base[-1] != '/':
         base += '/'
     url = f"{base}{path}"
 
+    req = urllib.request.Request(url, headers=headers)
+
     for i in range(0, 3):
         try:
-            return json.load(urllib.request.urlopen(url))
+            return json.load(urllib.request.urlopen(req))
         except (urllib.error.HTTPError, json.JSONDecodeError) as e:
             time.sleep(.25 + 1 * i)
 
@@ -91,7 +94,9 @@ def load_hotspots(force=False):
                 url = 'https://api.helium.io/v1/hotspots'
                 if cursor:
                     url += '?cursor=' + cursor
-                resp = json.load(urllib.request.urlopen(url))
+
+                req = urllib.request.Request(url, headers=headers)
+                resp = json.load(urllib.request.urlopen(req))
                 cursor = resp.get('cursor')
 
                 if not resp.get('data'):

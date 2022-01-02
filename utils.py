@@ -104,11 +104,15 @@ def load_hotspots(force=False):
                         time.sleep(5)
                         continue
 
+                json_data = json.load(resp)
+                cursor = json_data.get('cursor')
+
+                if not json_data.get('data'):
                     break
                 #print(resp.get('data'))
-                hotspots.extend(resp.get('data'))
+                hotspots.extend(json_data.get('data'))
                 print(f"-I- found {len(hotspots)} hotspots")
-                if len(resp.get('data', [])) < 1000 or cursor is None:
+                if len(json_data.get('data', [])) < 1000 or cursor is None:
                     break
 
             dat = dict(

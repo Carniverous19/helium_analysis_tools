@@ -136,3 +136,4 @@ hotspots.json
 *.secret
 *.data
 
+.DS_Store

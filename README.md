@@ -9,7 +9,7 @@ To install simply run:
     $ cd helium_analysis_tools
     $ pip install -r requirements.txt
 
-Pip will automatically install any missing dependencies.
+Pip will automatically install dependencies.
 
 ### Requirements
 
@@ -18,48 +18,49 @@ Pip will automatically install any missing dependencies.
 
 # Tools
 A lot of these tools require a cache of hotspots from Helium's hotspot API.  
-This cache will be created automatically if not present in the `helium_analysis_tools` folder called `hotspots.json`.
-The file is not updated on each run so may be a few days stale but will auto-refresh if its older than 72-hours.
+This cache will be created automatically as `hotspots.json` if not present in the `helium_analysis_tools` folder.
+
+This file is not updated on each run so may be a few days stale but will prompt the user to refresh their cache if it's older than 72 hours.
+
+More than 400,000 hotspots have been onboarded and so generating this cache can take quite some time (typically around 15 minutes).
 
 To force refresh the cache run:
 
     python3 utils.py -x refresh_hotspots
 
-Note the hotspot you specify to be analyzed is pulled from the API on every function call so it has fresh information but its neighbors or witnesses may be stale.
+Note that the hotspot you specify to be analyzed is pulled from the API on every function call so it has fresh information but its neighbors or witnesses may be stale.
 None of these tools are useful for quick changes and its assumed hotspots and their neighbors are fairly stationary over the period of time analyzed.
 
 A list of tools and brief description is provided below.
 
 ## analyze_hotspot.py
-This is the old set of tools used for multi-hop PoC it is depreciated as beaconing and HIP17 rewards changed a lot of how PoC activity should be analyzed.
+This is the old set of tools used for multi-hop PoC. It is deprecated as beaconing and HIP17 rewards changed a lot of how PoC activity should be analyzed.
 Ignore this file and associated reports unless you need to use them for legacy purposes.
-
 
 ## beacon_reports.py
 This is the main report generating tool and gives useful reports on an individual hotspots PoC and challenge creation activity.
 Note this code allows you to specify either hotspot name (with dashes) or hotspot address.
-It is suggested to always use the hotspot address as there is no guarantee that a hotspot has a unique name (there are already 16 conflicts among ~17,500 hotspots).
+It is suggested to always use the hotspot address as there is no guarantee that a hotspot has a unique name (tens of thousands of conflicts are known to exist).
 If there is a hotspot naming conflict only the last hotspot with that name returned will be considered.
 
-see 
+For more details on arguments, run the following:
 
     python3 beacon_reports.py -h
-    
-for more details on arguments.
 
-### witnesses
+### Witnesses
 
 This report gives a summary of recent witnesses for the specified hotspot.
-These are receives by the reference hotspot, to see who can hear the reference hotspot's transmits use the "beacons" report.
-There are two main reports the default report and the detailed report.
+These are other hotspots beacons witnessed by the passed-in hotspot. To instead see who can hear the passed-in hotspot's transmitted beacons, use the "beacons" report.
 
-to run the default `witnesses` report run:
+There are two main reports, the default report and the detailed report.
+
+To run a default `witnesses` report, run:
 
     python3 beacon_reports.py -x witnesses --address {hotspot address}
 
 
-The first table lists information about each hotspot the reference hotspot (specified in command line) can witness.
-hotspots are listed in decending order of reward units (RUs).
+The first table lists information about each hotspot the passed-in hotspot can witness.
+Hotspots are listed in decending order of reward units (RUs).
 A sample table is shown below:
 
     Witnesses for: dry-daisy-tortoise
@@ -84,7 +85,8 @@ Column descriptions:
  
 Another summary table is provided after the list of all hotspots that were witnessed.
 This table shows the reward-units earned aggregated by compass heading.
-Its useful to determine what directions are providing the most rewards.
+It's useful to determine what directions are providing the most rewards.
+
 A sample table is shown below:
 
     Earnings by compass heading
@@ -102,12 +104,12 @@ Column descriptions:
  - **RUs**: This is the sum of all reward units from hotspots at the specified compass heading over the PoCs analyzed
  - **bar chart**: This is a crude bar chart showing the same information as "RUs".  The direction with the most earnings will have 32 `X`'s and the others are scaled accordingly
 
-#### witness details
+#### Witness details
 
-The detailed witness report will list each witness for the reference hotspot of the PoCs analyzed.
+A detailed witness report will list each witness for the reference hotspot of the PoCs analyzed.
 This could be hundreds of columns so it is best to use this in combination with the `-c` or `--challenges` argument to limit the challenge history.
 
-to run the detailed `witnesses` report run the same command but specify the `-d` or `--details` flag:
+To run a detailed `witnesses` report, use the `-d` or `--details` flag:
 
     python3 beacon_reports.py -x witnesses --address {hotspot address} --details
     
@@ -134,24 +136,24 @@ A sample table is shown below:
     02-03 07:13:09 |  703423 | obedient-flaxen-cat       |    7.8  | INVAL  |  11.0 |  -96 | 0.00 | snr too high (snr:11.0, rssi: -96<-90)
 
 Column descriptions:
- - **time**: This is the time in your local timezone (or the operating systems configured timezone) when the witness occurred
+ - **time**: This is the time in your local timezone (or the operating system's configured timezone) when the witness occurred
  - **block**: This is the block height reported in the witness transaction
  - **transmitting hotspot**: This is the name of the hotspot that beaconed and can be witnessed by the reference hotspot.  Note if the name is longer than 25-characters it will be clipped.
  - **dist km**: This is the distance between the transmitting hotspot and reference hotspot in km using the cache'd hotspot locations and haversine formula.
- - **valid?**: This will be `valid` if the witness was valid or `INVAL` if the witness was invalid, see `inval reason` fora  description of why a witness was invalid
+ - **valid?**: This will be `valid` if the witness was valid or `INVAL` if the witness was invalid, see `inval reason` for a description of why a witness was invalid
  - **snr**: This is the signal to noise ratio in dB for the witness
  - **rssi**: This is the signal strength in dBm for the witness
  - **RUs**: This is the number of reward units earned for this specific witness
- - **inval reason**: If the witness was invalid this column will give a brief description of why it was invalid.
+ - **inval reason**: If the witness was invalid this column will give a brief description of why it was invalid
 
-### beacons
+### Beacons
 This report gives a summary of recent beacons from the specified hotspot.
 Beacons are the result of being challenged by other hotspots and show up as "challengee" activity in explorer.
-The should occur roughly every 240 blocks based on the `poc_challenge_interval` chain variable at the time of this writing.
+The should occur every 360 blocks (based on the `poc_challenge_interval` chain variable).
 These are transmits by the reference hotspot, to see who can be received by the reference hotspot use the "witnesses" report.
 There are two main reports the default report and the detailed report.
 
-to run the default `beacons` report run:
+To run a default `beacons` report, run:
 
     python3 beacon_reports.py -x beacons --address {hotspot address}
 
@@ -205,7 +207,7 @@ Column descriptions:
  
 The third chart is similar to the beacons by day but is organized by 3000 blocks.
 This could be helpful to show regular behavior even if block times speed up and slow down.
-Remember "time" for the blockhain is based on blocks not days/hours/minutes.
+Remember "time" for the blockchain is based on blocks not days/hours/minutes.
 This chart groups beacon activity in groups of 3000 blocks which would *roughly* correspond to 2 days if blocks are perfectly hitting their 60s interval.
 A sample table is shown below:
 
@@ -224,11 +226,11 @@ Column descriptions:
  - **bcns**: This is the number of beacons transmitted within the specified block range
 The remaining columns are the same as the above table for the block interval instead of date.
 
-#### beacon details
+#### Beacon details
 
-The detailed beacon report will list each beacon transmitted from the reference hotspot.
+A detailed beacon report will list each beacon transmitted from the reference hotspot.
 
-to run the detailed `beacons` report run the same command but specify the `-d` or `--details` flag:
+To run a detailed `beacons` report, use the `-d` or `--details` flag:
 
     python3 beacon_reports.py -x beacons --address {hotspot address} --details
 
@@ -254,25 +256,25 @@ A sample table is shown below:
     02-02 10:29:05 |  702217 | 53     |     9 |     2 |    0 | 0.29 | VVVVVVVVVii
 
 Column descriptions:
- - **Beacon Time**: This is the time in your local timezone (or the operating systems configured timezone) when the beacon occurred
+ - **Beacon Time**: This is the time in your local timezone (or the operating system's configured timezone) when the beacon occurred
  - **block**: This is the block height for the challenge receipt
- - **blck Δ**: This is the block delta or number of blocks between the beacon at the current row and the previous row (in the future). This should average to ~240 blocks but there is no lower or upper limit and randomness means you may see low or high numbers occasionally without it being an bug.
+ - **blck Δ**: This is the block delta or number of blocks between the beacon at the current row and the previous row (in the future). This should average to ~360 blocks but there is no lower or upper limit and randomness means you may see low or high numbers occasionally without it being an bug.
  - **Valid**: This is the number of valid witnesses the beacon had.
  - **inval**: This is the number of invalid witnesses for RSSI or SNR PoCv10 violations, *not* invalid for being too close.  There are beacon reward penalties for these.
  - **near**: This is the number of witnesses that are invalid for being too close to the transmitter.  There are no penalties for these and they are ignored in reward calculations.
  - **RU's**: This is the estimated number of reward units earned for this specific beacon. 
  - **witness bar chart**: This is a crude bar chart showing the number of witnesses for the beacon.  There will be a `V` for each valid witness, an `i` for each invalid witness, and a `c` for each witness that is to near or close to the transmitter.
  
-### challenges
+### Challenges
 This report gives a summary of recent challenges created by the specified hotspot.
-Challenges are created periodically and transmitted to the challengee over p2p.  These show up as "challenger" activity in explorer.
+Challenges are created periodically and transmitted to the challengee over p2p. These show up as "challenger" activity in the Helium explorer.
 Hotspots need to create challenges to show they are active and participating in the blockchain to be eligible to receive challenges and participate in PoC.
-Challenges can be created every 240 blocks based on the `poc_challenge_interval` chain variable at the time of this writing.
-Challenges with a challengee or witness receipt (`poc_receipt_v1` transactions) must be submitted every 1,000 blocks based on `poc_v4_target_challenge_age` chain var to be considered active.
+Challenges can be created every 360 blocks (based on the `poc_challenge_interval` chain variable).
+Challenges with a challengee or witness receipt (`poc_receipt_v1` transactions) must be submitted every 1,000 blocks (based on `poc_v4_target_challenge_age` chain variable) to be considered active.
 Again everything in these reports is done over the reference hotspot's internet / p2p communication and has nothing to do with RF performance.
 There are two main reports the default report and the detailed report.
 
-to run the default `challenges` report run:
+To run a default `challenges` report, run:
 
     python3 beacon_reports.py -x beacons --address {hotspot address}
     
@@ -289,14 +291,13 @@ Hotspot: bright-cloud-newt
             range (min - max): 245 - 1095
 
 This shows similar statics to the first table for the "beacons" report but from the challenger's perspective.
-Note it appears the 240 block or `poc_challenge_interval` variable is a hard limit and you will not be able to create challenges faster than than rate.
-Therefore the min interval is likely to be very close but above 240.
+Note that the 360 block (`poc_challenge_interval` chain variable) is a hard limit and you will not be able to create challenges faster than than rate, therefore the minimum interval is likely to be very close to but above 360.
 
-#### challenges details
+#### Challenges details
 
 The detailed witness report will list each challenge created by the reference hotspot.
 
-to run the detailed `challenges` report run the same command but specify the `-d` or `--details` flag:
+To run a detailed `challenges` report, use the `-d` or `--details` flag:
 
     python3 beacon_reports.py -x challenges --address {hotspot address} --details
     

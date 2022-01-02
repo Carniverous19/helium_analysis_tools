@@ -6,16 +6,10 @@ import statistics
 import datetime as dt
 from classes.Hotspots import Hotspots
 import utils
+import matplotlib.pyplot as plt
 
 has_mpl = False
 show_plots = False
-try:
-    import matplotlib.pyplot as plt
-
-    has_mpl = True
-except ModuleNotFoundError as e:
-    # print(f"run `python3 -m pip install matplotlib` to enable plotting")
-    pass
 
 
 def transmit_details(hotspot, challenges, smry_only=False):

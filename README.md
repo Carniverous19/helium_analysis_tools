@@ -3,11 +3,18 @@ This repo contains generic tools for analyzing PoC activity.
 These are provided for information only, there is no guarantee of accuracy.
 
 ## Installation
-To install simply run
+To install simply run:
 
-    git clone https://github.com/Carniverous19/helium_analysis_tools.git
-    
-At time of writing only Python3.8+ is required.
+    $ git clone https://github.com/Carniverous19/helium_analysis_tools.git
+    $ cd helium_analysis_tools
+    $ pip install -r requirements.txt
+
+Pip will automatically install any missing dependencies.
+
+### Requirements
+
+* Python 3.8+
+* Matplotlib 3.5.1+
 
 # Tools
 A lot of these tools require a cache of hotspots from Helium's hotspot API.  

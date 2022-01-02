@@ -96,10 +96,14 @@ def load_hotspots(force=False):
                     url += '?cursor=' + cursor
 
                 req = urllib.request.Request(url, headers=headers)
-                resp = json.load(urllib.request.urlopen(req))
-                cursor = resp.get('cursor')
 
-                if not resp.get('data'):
+                try:
+                    resp = urllib.request.urlopen(req)
+                except urllib.error.HTTPError as e:
+                    if e.code == 429:
+                        time.sleep(5)
+                        continue
+
                     break
                 #print(resp.get('data'))
                 hotspots.extend(resp.get('data'))

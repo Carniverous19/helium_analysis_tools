@@ -6,6 +6,8 @@ import time
 import argparse
 from math import radians, cos, sin, asin, sqrt, log10, ceil, degrees, atan2
 
+hdr = { 'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; Win64; x64)' }
+
 #compass_headings = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 compass_headings = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW']
 
@@ -16,7 +18,8 @@ def api_call(base='https://api.helium.io/v1/', path=''):
 
     for i in range(0, 3):
         try:
-            return json.load(urllib.request.urlopen(url))
+            req = urllib.request.Request(url, headers=hdr)
+            return json.load(urllib.request.urlopen(req))
         except (urllib.error.HTTPError, json.JSONDecodeError) as e:
             time.sleep(.25 + 1 * i)
 
@@ -91,16 +94,22 @@ def load_hotspots(force=False):
                 url = 'https://api.helium.io/v1/hotspots'
                 if cursor:
                     url += '?cursor=' + cursor
-                resp = json.load(urllib.request.urlopen(url))
-                cursor = resp.get('cursor')
+                try:
+                    req = urllib.request.Request(url, headers=hdr)
+                    resp = json.load(urllib.request.urlopen(req))
+                    cursor = resp.get('cursor')
 
-                if not resp.get('data'):
-                    break
-                #print(resp.get('data'))
-                hotspots.extend(resp.get('data'))
-                print(f"-I- found {len(hotspots)} hotspots")
-                if len(resp.get('data', [])) < 1000 or cursor is None:
-                    break
+                    if not resp.get('data'):
+                        break
+                    #print(resp.get('data'))
+                    hotspots.extend(resp.get('data'))
+                    print(f"-I- found {len(hotspots)} hotspots")
+                   
+                    if len(resp.get('data', [])) < 1000 or cursor is None:
+                        break
+                except:
+                    time.sleep(20) #wait a bit, frequent calls to api ends up with HTTP Error 429: Too Many Requests
+                    continue
 
             dat = dict(
                 time=int(time.time()),

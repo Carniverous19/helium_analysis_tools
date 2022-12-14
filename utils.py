@@ -124,6 +124,14 @@ def load_hotspots(force=False):
                     if e.code == 429:
                         time.sleep(5)
                         continue
+                    elif e.code == 503:
+                        # Service Unavailable
+                        time.sleep(5)
+                        continue
+                    elif e.code == 500:
+                        print(f"-W- found error 500: "+str(e))
+                        time.sleep(10)
+                        continue
 
                 json_data = json.load(resp)
                 cursor = json_data.get("cursor")

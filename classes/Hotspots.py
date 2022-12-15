@@ -2,7 +2,6 @@ from utils import load_hotspots, api_call
 
 
 class Hotspots:
-
     def __init__(self, force=False):
         """
         Interface for easily finding hotspots
@@ -11,10 +10,12 @@ class Hotspots:
         self.hotspots = load_hotspots(force)
 
         self.hspot_by_addr = dict()
-        self.hspot_by_name = dict()  # note there are already name collisions use at your own risk
+        self.hspot_by_name = (
+            dict()
+        )  # note there are already name collisions use at your own risk
         for h in self.hotspots:
-            self.hspot_by_addr[h['address']] = h
-            self.hspot_by_name[h['name'].lower()] = h
+            self.hspot_by_addr[h["address"]] = h
+            self.hspot_by_name[h["name"].lower()] = h
 
     def get_hotspot_by_addr(self, address):
         return self.hspot_by_addr.get(address)
@@ -25,7 +26,7 @@ class Hotspots:
     def get_hotspots_by_owner(self, owner):
         hspots = []
         for h in self.hotspots:
-            if h['owner'] == owner:
+            if h["owner"] == owner:
                 hspots.append(h)
         return h
 
@@ -33,12 +34,10 @@ class Hotspots:
         if name:
             address = self.get_hotspot_by_name(name)
 
-        hspot_info = api_call(path=f'/hotspots/{address}').get('data', None)
+        hspot_info = api_call(path=f"/hotspots/{address}").get("data", None)
         if hspot_info:
-            self.hspot_by_addr[hspot_info['address']] = hspot_info
-            self.hspot_by_name[hspot_info['name']] = hspot_info
-
-
+            self.hspot_by_addr[hspot_info["address"]] = hspot_info
+            self.hspot_by_name[hspot_info["name"]] = hspot_info
 
     def get_hotspot_witnesses(self, address=None, name=None):
         h = None
@@ -47,11 +46,11 @@ class Hotspots:
         else:
             h = self.get_hotspot_by_addr(address)
         w = api_call(path=f"hotspots/{h['address']}/witnesses")
-        return w.get('data')
+        return w.get("data")
 
     def get_hotspots(self):
         return self.hotspots
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     H = Hotspots(force=True)
